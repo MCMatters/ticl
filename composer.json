@@ -1,0 +1,19 @@
+{
+    "name": "mcmatters/ticl",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Borzyonok",
+            "email": "dima.matters@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "McMatters\\Ticl\\": "src/"
+        }
+    }
+}
