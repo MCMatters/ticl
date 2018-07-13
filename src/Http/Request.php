@@ -175,11 +175,11 @@ class Request
     {
         if (array_key_exists('query', $this->options)) {
             if (is_array($this->options['query'])) {
-                return $this->uri .= http_build_query($this->options['query']);
+                return $this->uri .= '?'.http_build_query($this->options['query']);
             }
 
             if (is_string($this->options['query'])) {
-                return $this->uri .= $this->options['query'];
+                return $this->uri .= '?'.ltrim($this->options['query'], '?');
             }
 
             throw new InvalidArgumentException('"query" must be as an array or string');
