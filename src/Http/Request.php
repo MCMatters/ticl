@@ -11,9 +11,9 @@ use const true;
 use const CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST, CURLOPT_FAILONERROR,
     CURLOPT_HEADER, CURLOPT_HTTPHEADER, CURLOPT_NOBODY, CURLOPT_POSTFIELDS,
     CURLOPT_RETURNTRANSFER, CURLOPT_URL;
-use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
-    curl_setopt, http_build_query, is_array, is_string, json_encode,
-    method_exists, ucfirst;
+use function array_key_exists, array_map, curl_close, curl_exec, curl_getinfo,
+    curl_init, curl_setopt, http_build_query, is_array, is_bool, is_string,
+    json_encode, method_exists, ucfirst;
 
 /**
  * Class Request
@@ -175,7 +175,16 @@ class Request
     {
         if (array_key_exists('query', $this->options)) {
             if (is_array($this->options['query'])) {
-                return $this->uri .= '?'.http_build_query($this->options['query']);
+                $query = $this->options['query'];
+
+                if ($this->options['bool_as_string'] ?? false) {
+                    $query = array_map(
+                        [$this, 'castBoolToString'],
+                        $this->options['query']
+                    );
+                }
+
+                return $this->uri .= '?'.http_build_query($query);
             }
 
             if (is_string($this->options['query'])) {
@@ -253,5 +262,19 @@ class Request
         $this->headers = $options['headers'] ?? [];
 
         unset($options['headers']);
+    }
+
+    /**
+     * @param mixed $item
+     *
+     * @return mixed
+     */
+    protected function castBoolToString($item)
+    {
+        if (is_bool($item)) {
+            return $item ? 'true' : 'false';
+        }
+
+        return $item;
     }
 }

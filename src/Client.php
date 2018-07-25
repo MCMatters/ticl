@@ -28,23 +28,16 @@ class Client
     /**
      * @var array
      */
-    protected $headers;
-
-    /**
-     * @var string
-     */
-    protected $baseUri;
+    protected $config;
 
     /**
      * Client constructor.
      *
-     * @param string $baseUri
-     * @param array $headers
+     * @param array $config
      */
-    public function __construct(string $baseUri = '', array $headers = [])
+    public function __construct(array $config = [])
     {
-        $this->baseUri = $baseUri;
-        $this->headers = $headers;
+        $this->config = $config;
     }
 
     /**
@@ -87,8 +80,12 @@ class Client
 
         $uri = $arguments[0];
 
-        if ($this->baseUri) {
-            return rtrim($this->baseUri, '/').'/'.ltrim($uri, '/');
+        if (!empty($this->config['base_uri'])) {
+            $baseUri = $this->config['base_uri'];
+
+            unset($this->config['base_uri']);
+
+            return rtrim($baseUri, '/').'/'.ltrim($uri, '/');
         }
 
         if (null === parse_url($uri, PHP_URL_HOST)) {
@@ -107,10 +104,7 @@ class Client
     {
         $options = $arguments[1] ?? [];
 
-        $options['headers'] = array_merge_recursive(
-            $options['headers'] ?? [],
-            $this->headers
-        );
+        $options = array_merge_recursive($options, $this->config);
 
         return $options;
     }
