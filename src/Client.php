@@ -9,8 +9,9 @@ use InvalidArgumentException;
 use McMatters\Ticl\Http\Request;
 use McMatters\Ticl\Http\Response;
 use const null, true;
-use const PHP_URL_HOST;
-use function array_merge_recursive, in_array, is_string, ltrim, parse_url, rtrim, strtolower;
+use const ARRAY_FILTER_USE_KEY, PHP_URL_HOST;
+use function array_filter, array_merge_recursive, in_array, is_string, ltrim,
+    parse_url, rtrim, strtolower;
 
 /**
  * Class Client
@@ -81,11 +82,7 @@ class Client
         $uri = $arguments[0];
 
         if (!empty($this->config['base_uri'])) {
-            $baseUri = $this->config['base_uri'];
-
-            unset($this->config['base_uri']);
-
-            return rtrim($baseUri, '/').'/'.ltrim($uri, '/');
+            return rtrim($this->config['base_uri'], '/').'/'.ltrim($uri, '/');
         }
 
         if (null === parse_url($uri, PHP_URL_HOST)) {
@@ -104,7 +101,18 @@ class Client
     {
         $options = $arguments[1] ?? [];
 
-        $options = array_merge_recursive($options, $this->config);
+        $omittedKeys = ['base_uri'];
+
+        $options = array_merge_recursive(
+            $options,
+            array_filter(
+                $this->config,
+                function (string $key) use($omittedKeys) {
+                    return in_array($key, $omittedKeys, true);
+                },
+                ARRAY_FILTER_USE_KEY
+            )
+        );
 
         return $options;
     }
