@@ -108,7 +108,7 @@ class Client
             array_filter(
                 $this->config,
                 function (string $key) use($omittedKeys) {
-                    return in_array($key, $omittedKeys, true);
+                    return !in_array($key, $omittedKeys, true);
                 },
                 ARRAY_FILTER_USE_KEY
             )
