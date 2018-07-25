@@ -175,6 +175,10 @@ class Request
     {
         if (array_key_exists('query', $this->options)) {
             if (is_array($this->options['query'])) {
+                if (empty($this->options['query'])) {
+                    return $this->uri;
+                }
+
                 $query = $this->options['query'];
 
                 if ($this->options['bool_as_string'] ?? false) {
