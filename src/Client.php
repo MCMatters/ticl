@@ -10,7 +10,7 @@ use McMatters\Ticl\Http\Request;
 use McMatters\Ticl\Http\Response;
 use const null, true;
 use const ARRAY_FILTER_USE_KEY, PHP_URL_HOST;
-use function array_filter, array_merge_recursive, in_array, is_string, ltrim,
+use function array_filter, array_replace_recursive, in_array, is_string, ltrim,
     parse_url, rtrim, strtolower;
 
 /**
@@ -103,7 +103,7 @@ class Client
 
         $omittedKeys = ['base_uri'];
 
-        $options = array_merge_recursive(
+        $options = array_replace_recursive(
             $options,
             array_filter(
                 $this->config,
