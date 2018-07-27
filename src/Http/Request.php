@@ -4,16 +4,17 @@ declare(strict_types = 1);
 
 namespace McMatters\Ticl\Http;
 
-use InvalidArgumentException;
+use McMatters\Ticl\Enums\HttpStatusCode;
 use McMatters\Ticl\Exceptions\RequestException;
+use McMatters\Ticl\Http\Traits\RequestDataHandlingTrait;
+use McMatters\Ticl\Http\Traits\RequestQueryHandlingTrait;
 use McMatters\Ticl\Traits\HeadersTrait;
 use const true;
 use const CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST, CURLOPT_FAILONERROR,
     CURLOPT_HEADER, CURLOPT_HTTPHEADER, CURLOPT_NOBODY, CURLOPT_POSTFIELDS,
     CURLOPT_RETURNTRANSFER, CURLOPT_URL;
-use function array_key_exists, array_map, curl_close, curl_exec, curl_getinfo,
-    curl_init, curl_setopt, http_build_query, is_array, is_bool, is_string,
-    json_encode, method_exists, ucfirst;
+use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
+    curl_setopt, method_exists, ucfirst;
 
 /**
  * Class Request
@@ -22,7 +23,7 @@ use function array_key_exists, array_map, curl_close, curl_exec, curl_getinfo,
  */
 class Request
 {
-    use HeadersTrait;
+    use HeadersTrait, RequestDataHandlingTrait, RequestQueryHandlingTrait;
 
     /**
      * @var resource
@@ -83,15 +84,15 @@ class Request
      */
     public function send(): Response
     {
+        $this->setOptionsDependOnMethod();
+
         curl_setopt($this->curl, CURLOPT_URL, $this->getUriForRequest());
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeadersForRequest());
         curl_setopt($this->curl, CURLOPT_HEADER, true);
 
-        $this->setOptionsDependOnMethod();
-
         $response = curl_exec($this->curl);
 
-        if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= 400) {
+        if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
             throw new RequestException($response, $this->curl);
         }
 
@@ -134,7 +135,7 @@ class Request
     protected function preparePostRequest()
     {
         $this->prepareGetRequest();
-        curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getPostDataFromOptions());
+        curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestData());
     }
 
     /**
@@ -174,28 +175,7 @@ class Request
     protected function getUriForRequest(): string
     {
         if (array_key_exists('query', $this->options)) {
-            if (is_array($this->options['query'])) {
-                if (empty($this->options['query'])) {
-                    return $this->uri;
-                }
-
-                $query = $this->options['query'];
-
-                if ($this->options['bool_as_string'] ?? false) {
-                    $query = array_map(
-                        [$this, 'castBoolToString'],
-                        $this->options['query']
-                    );
-                }
-
-                return $this->uri .= '?'.http_build_query($query);
-            }
-
-            if (is_string($this->options['query'])) {
-                return $this->uri .= '?'.ltrim($this->options['query'], '?');
-            }
-
-            throw new InvalidArgumentException('"query" must be as an array or string');
+            $this->handleQueryRequest();
         }
 
         return $this->uri;
@@ -205,38 +185,18 @@ class Request
      * @return string
      * @throws \InvalidArgumentException
      */
-    protected function getPostDataFromOptions(): string
+    protected function getRequestData(): string
     {
         if (array_key_exists('json', $this->options)) {
-            if (!$this->hasHeader('content-type')) {
-                $this->setHeader('content-type', 'application/json');
-            }
-
-            if (is_array($this->options['json'])) {
-                return json_encode($this->options['json']);
-            }
-
-            if (!is_string($this->options['json'])) {
-                throw new InvalidArgumentException(
-                    '"json" key must be as an array or string'
-                );
-            }
-
-            return $this->options['json'];
+            return $this->handleJsonRequestData();
         }
 
         if (array_key_exists('body', $this->options)) {
-            if (is_array($this->options['body'])) {
-                return http_build_query($this->options['body']);
-            }
+            return $this->handleBodyRequestData();
+        }
 
-            if (!is_string($this->options['body'])) {
-                throw new InvalidArgumentException(
-                    '"body" key must be as an array or string'
-                );
-            }
-
-            return $this->options['body'];
+        if (array_key_exists('form', $this->options)) {
+            return $this->handleFormRequestData();
         }
 
         return '';
@@ -266,19 +226,5 @@ class Request
         $this->headers = $options['headers'] ?? [];
 
         unset($options['headers']);
-    }
-
-    /**
-     * @param mixed $item
-     *
-     * @return mixed
-     */
-    protected function castBoolToString($item)
-    {
-        if (is_bool($item)) {
-            return $item ? 'true' : 'false';
-        }
-
-        return $item;
     }
 }
