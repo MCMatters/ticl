@@ -1,5 +1,6 @@
 {
     "name": "mcmatters/ticl",
+    "description": "Tiny http client",
     "license": "MIT",
     "authors": [
         {
@@ -9,7 +10,8 @@
     ],
     "require": {
         "php": ">=7.0",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {

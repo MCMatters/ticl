@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace McMatters\Ticl\Http;
 
 use McMatters\Ticl\Exceptions\JsonDecodingException;
+use McMatters\Ticl\Traits\HeadersTrait;
 use const CURLINFO_HEADER_SIZE, JSON_ERROR_NONE;
 use function count, curl_getinfo, explode, json_decode, json_last_error,
     json_last_error_msg, preg_match, substr, trim;
@@ -16,6 +17,8 @@ use function count, curl_getinfo, explode, json_decode, json_last_error,
  */
 class Response
 {
+    use HeadersTrait;
+
     /**
      * @var int
      */
