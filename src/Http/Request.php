@@ -199,6 +199,10 @@ class Request
             return $this->handleFormRequestData();
         }
 
+        if (array_key_exists('binary', $this->options)) {
+            return $this->handleBinaryRequestData();
+        }
+
         return '';
     }
 

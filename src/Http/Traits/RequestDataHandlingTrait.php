@@ -6,7 +6,7 @@ namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
 use function basename, gettype, http_build_query, implode, is_array,
-    is_callable, is_string, stream_get_contents;
+    is_callable, is_resource, is_string, stream_get_contents;
 
 /**
  * Trait RequestDataHandlingTrait
@@ -50,11 +50,24 @@ trait RequestDataHandlingTrait
 
         if (!is_string($this->options['body'])) {
             throw new InvalidArgumentException(
-                '"body" key must be as an array or string'
+                '"body" key must be an array or string'
             );
         }
 
         return $this->options['body'];
+    }
+
+    /**
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
+    protected function handleBinaryRequestData()
+    {
+        if (!is_resource($this->options['binary'])) {
+            throw new InvalidArgumentException('Binary must be a resource');
+        }
+
+        return $this->options['binary'];
     }
 
     /**
