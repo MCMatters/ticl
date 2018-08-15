@@ -7,7 +7,7 @@ namespace McMatters\Ticl\Http;
 use McMatters\Ticl\Helpers\JsonHelper;
 use McMatters\Ticl\Traits\HeadersTrait;
 use const CURLINFO_HEADER_SIZE;
-use function count, curl_getinfo, explode, preg_match, substr, trim;
+use function array_filter, array_pop, count, curl_getinfo, explode, preg_match, substr, trim;
 
 /**
  * Class Response
@@ -112,7 +112,9 @@ class Response
     {
         $headers = substr($response, 0, $this->headerSize);
 
-        foreach (explode("\r\n", $headers) as $header) {
+        $responseHeaders = array_filter(explode("\r\n\r\n", $headers));
+
+        foreach (explode("\r\n", array_pop($responseHeaders)) as $header) {
             $header = trim($header);
 
             if (!$header) {

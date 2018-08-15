@@ -9,10 +9,10 @@ use McMatters\Ticl\Exceptions\RequestException;
 use McMatters\Ticl\Http\Traits\RequestDataHandlingTrait;
 use McMatters\Ticl\Http\Traits\RequestQueryHandlingTrait;
 use McMatters\Ticl\Traits\HeadersTrait;
-use const true;
 use const CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST, CURLOPT_FAILONERROR,
-    CURLOPT_HEADER, CURLOPT_HTTPHEADER, CURLOPT_NOBODY, CURLOPT_POSTFIELDS,
-    CURLOPT_RETURNTRANSFER, CURLOPT_URL;
+    CURLOPT_FOLLOWLOCATION, CURLOPT_HEADER, CURLOPT_HTTPHEADER, CURLOPT_MAXREDIRS,
+    CURLOPT_NOBODY, CURLOPT_POSTFIELDS, CURLOPT_RETURNTRANSFER, CURLOPT_URL;
+use const false, true;
 use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
     curl_setopt, method_exists, ucfirst;
 
@@ -90,6 +90,8 @@ class Request
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeadersForRequest());
         curl_setopt($this->curl, CURLOPT_HEADER, true);
 
+        $this->setUpRedirects();
+
         $response = curl_exec($this->curl);
 
         if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
@@ -166,6 +168,17 @@ class Request
     {
         $this->preparePostRequest();
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
+    }
+
+    /**
+     * @return void
+     */
+    protected function setUpRedirects()
+    {
+        if ($this->options['follow_redirects'] ?? true) {
+            curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($this->curl, CURLOPT_MAXREDIRS, $this->options['max_redirects'] ?? 5);
+        }
     }
 
     /**
