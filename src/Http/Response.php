@@ -4,11 +4,10 @@ declare(strict_types = 1);
 
 namespace McMatters\Ticl\Http;
 
-use McMatters\Ticl\Exceptions\JsonDecodingException;
+use McMatters\Ticl\Helpers\JsonHelper;
 use McMatters\Ticl\Traits\HeadersTrait;
-use const CURLINFO_HEADER_SIZE, JSON_ERROR_NONE;
-use function count, curl_getinfo, explode, json_decode, json_last_error,
-    json_last_error_msg, preg_match, substr, trim;
+use const CURLINFO_HEADER_SIZE;
+use function count, curl_getinfo, explode, preg_match, substr, trim;
 
 /**
  * Class Response
@@ -84,15 +83,12 @@ class Response
      * @return mixed
      * @throws \McMatters\Ticl\Exceptions\JsonDecodingException
      */
-    public function json(bool $associative = true, int $depth = 512, int $options = 0)
-    {
-        $content = json_decode($this->body, $associative, $depth, $options);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new JsonDecodingException(json_last_error_msg());
-        }
-
-        return $content;
+    public function json(
+        bool $associative = true,
+        int $depth = 512,
+        int $options = 0
+    ) {
+        return JsonHelper::decode($this->body, $associative, $depth, $options);
     }
 
     /**

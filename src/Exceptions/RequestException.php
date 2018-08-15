@@ -4,7 +4,9 @@ declare(strict_types = 1);
 
 namespace McMatters\Ticl\Exceptions;
 
+use McMatters\Ticl\Helpers\JsonHelper;
 use RuntimeException;
+use Throwable;
 use const CURLINFO_HEADER_SIZE;
 use function curl_getinfo, substr;
 
@@ -26,6 +28,18 @@ class RequestException extends RuntimeException
         $this->setMessage($response, $curl)->setCode($curl);
 
         parent::__construct($this->message, $this->code);
+    }
+
+    /**
+     * @return array
+     */
+    public function asJson(): array
+    {
+        try {
+            return JsonHelper::decode($this->message);
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 
     /**
