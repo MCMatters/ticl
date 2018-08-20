@@ -86,8 +86,11 @@ class Request
     {
         $this->setOptionsDependOnMethod();
 
-        curl_setopt($this->curl, CURLOPT_URL, $this->getUriForRequest());
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeadersForRequest());
+        $url = $this->getUriForRequest();
+        $headers = $this->getHeadersForRequest();
+
+        curl_setopt($this->curl, CURLOPT_URL, $url);
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($this->curl, CURLOPT_HEADER, true);
 
         $this->setUpRedirects();
@@ -96,6 +99,10 @@ class Request
 
         if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
             throw new RequestException($response, $this->curl);
+        }
+
+        if (false === $response) {
+            throw new RequestException('', $this->curl);
         }
 
         return new Response($this->curl, $response);
@@ -188,7 +195,7 @@ class Request
     protected function getUriForRequest(): string
     {
         if (array_key_exists('query', $this->options)) {
-            $this->handleQueryRequest();
+            return $this->handleQueryRequest();
         }
 
         return $this->uri;

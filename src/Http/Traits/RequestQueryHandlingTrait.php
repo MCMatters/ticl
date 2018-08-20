@@ -41,11 +41,11 @@ trait RequestQueryHandlingTrait
                 );
             }
 
-            return $this->uri .= '?'.http_build_query($query);
+            return $this->uri.'?'.http_build_query($query);
         }
 
         if (is_string($this->options['query'])) {
-            return $this->uri .= '?'.ltrim($this->options['query'], '?');
+            return $this->uri.'?'.ltrim($this->options['query'], '?');
         }
 
         throw new InvalidArgumentException('"query" must be as an array or string');
