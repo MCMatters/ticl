@@ -5,8 +5,8 @@ declare(strict_types = 1);
 namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
-use function basename, gettype, http_build_query, implode, is_array,
-    is_callable, is_resource, is_string, stream_get_contents;
+use function basename, gettype, http_build_query, implode, is_array, is_callable,
+    is_resource, is_string, json_encode, sha1, stream_get_contents, uniqid;
 
 /**
  * Trait RequestDataHandlingTrait
@@ -26,7 +26,9 @@ trait RequestDataHandlingTrait
         }
 
         if (is_array($this->options['json'])) {
-            return json_encode($this->options['json']);
+            return json_encode($this->filterRequestData(
+                $this->options['json']
+            ));
         }
 
         if (!is_string($this->options['json'])) {
@@ -45,7 +47,9 @@ trait RequestDataHandlingTrait
     protected function handleBodyRequestData(): string
     {
         if (is_array($this->options['body'])) {
-            return http_build_query($this->options['body']);
+            return http_build_query($this->filterRequestData(
+                $this->options['body']
+            ));
         }
 
         if (!is_string($this->options['body'])) {

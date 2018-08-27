@@ -12,7 +12,7 @@ use McMatters\Ticl\Traits\HeadersTrait;
 use const CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST, CURLOPT_FAILONERROR,
     CURLOPT_FOLLOWLOCATION, CURLOPT_HEADER, CURLOPT_HTTPHEADER, CURLOPT_MAXREDIRS,
     CURLOPT_NOBODY, CURLOPT_POSTFIELDS, CURLOPT_RETURNTRANSFER, CURLOPT_URL;
-use const false, true;
+use const false, null, true;
 use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
     curl_setopt, method_exists, ucfirst;
 
@@ -224,6 +224,28 @@ class Request
         }
 
         return '';
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    protected function filterRequestData(array $data): array
+    {
+        if (!($this->options['filter_nulls'] ?? false)) {
+            return $data;
+        }
+
+        $filtered = [];
+
+        foreach ($data as $key => $item) {
+            if (null !== $item) {
+                $filtered[$key] = $item;
+            }
+        }
+
+        return $filtered;
     }
 
     /**
