@@ -4,25 +4,17 @@ declare(strict_types = 1);
 
 namespace McMatters\Ticl;
 
-use BadMethodCallException;
 use InvalidArgumentException;
 use McMatters\Ticl\Http\Request;
 use McMatters\Ticl\Http\Response;
-use const null, true;
-use const ARRAY_FILTER_USE_KEY, PHP_URL_HOST;
-use function array_filter, array_replace_recursive, in_array, is_string, ltrim,
-    parse_url, rtrim, strtolower;
+use const null;
+use const PHP_URL_HOST;
+use function array_replace_recursive, ltrim, parse_url, rtrim;
 
 /**
  * Class Client
  *
  * @package McMatters\Ticl
- * @method Response head(string $uri, array $options = [])
- * @method Response get(string $uri, array $options = [])
- * @method Response post(string $uri, array $options = [])
- * @method Response put(string $uri, array $options = [])
- * @method Response patch(string $uri, array $options = [])
- * @method Response delete(string $uri, array $options = [])
  */
 class Client
 {
@@ -42,45 +34,114 @@ class Client
     }
 
     /**
-     * @param string $name
-     * @param array $arguments
+     * @param string $uri
+     * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \BadMethodCallException
-     * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
      */
-    public function __call(string $name, array $arguments = [])
+    public function head(string $uri, array $options = []): Response
     {
-        $name = strtolower($name);
-
-        $methods = ['head', 'get', 'post', 'put', 'patch', 'delete'];
-
-        if (!in_array($name, $methods, true)) {
-            throw new BadMethodCallException();
-        }
-
-        return (new Request(
-            $name,
-            $this->prepareUri($arguments),
-            $this->prepareOptions($arguments)
-        ))->send();
+        return $this->call('head', $uri, $options);
     }
 
     /**
-     * @param array $arguments
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Response
+     * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
+     */
+    public function get(string $uri, array $options = []): Response
+    {
+        return $this->call('get', $uri, $options);
+    }
+
+    /**
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Response
+     * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
+     */
+    public function post(string $uri, array $options = []): Response
+    {
+        return $this->call('post', $uri, $options);
+    }
+
+    /**
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Response
+     * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
+     */
+    public function put(string $uri, array $options = []): Response
+    {
+        return $this->call('put', $uri, $options);
+    }
+
+    /**
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Response
+     * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
+     */
+    public function patch(string $uri, array $options = []): Response
+    {
+        return $this->call('patch', $uri, $options);
+    }
+
+    /**
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Response
+     * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
+     */
+    public function delete(string $uri, array $options = []): Response
+    {
+        return $this->call('delete', $uri, $options);
+    }
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Response
+     * @throws \McMatters\Ticl\Exceptions\RequestException
+     * @throws \InvalidArgumentException
+     */
+    protected function call(
+        string $method,
+        string $uri,
+        array $options = []
+    ): Response {
+        $request = new Request(
+            $method,
+            $this->prepareUri($uri),
+            $this->prepareOptions($options)
+        );
+
+        return $request->send();
+    }
+
+    /**
+     * @param string $uri
      *
      * @return string
      * @throws \InvalidArgumentException
      */
-    protected function prepareUri(array $arguments = []): string
+    protected function prepareUri(string $uri): string
     {
-        if (!isset($arguments[0]) || !is_string($arguments[0])) {
-            throw new InvalidArgumentException('"url" must be as a string');
-        }
-
-        $uri = $arguments[0];
-
         if (!empty($this->config['base_uri'])) {
             return rtrim($this->config['base_uri'], '/').'/'.ltrim($uri, '/');
         }
@@ -93,27 +154,12 @@ class Client
     }
 
     /**
-     * @param array $arguments
+     * @param array $options
      *
      * @return array
      */
-    protected function prepareOptions(array $arguments = []): array
+    protected function prepareOptions(array $options = []): array
     {
-        $options = $arguments[1] ?? [];
-
-        $omittedKeys = ['base_uri'];
-
-        $options = array_replace_recursive(
-            $options,
-            array_filter(
-                $this->config,
-                function (string $key) use($omittedKeys) {
-                    return !in_array($key, $omittedKeys, true);
-                },
-                ARRAY_FILTER_USE_KEY
-            )
-        );
-
-        return $options;
+        return array_replace_recursive($options, $this->config);
     }
 }
