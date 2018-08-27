@@ -81,6 +81,7 @@ class Response
      * @param int $options
      *
      * @return mixed
+     *
      * @throws \McMatters\Ticl\Exceptions\JsonDecodingException
      */
     public function json(

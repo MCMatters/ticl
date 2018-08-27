@@ -79,6 +79,7 @@ class Request
 
     /**
      * @return \McMatters\Ticl\Http\Response
+     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -139,6 +140,7 @@ class Request
 
     /**
      * @return void
+     *
      * @throws \InvalidArgumentException
      */
     protected function preparePostRequest()
@@ -149,6 +151,7 @@ class Request
 
     /**
      * @return void
+     *
      * @throws \InvalidArgumentException
      */
     protected function preparePutRequest()
@@ -159,6 +162,7 @@ class Request
 
     /**
      * @return void
+     *
      * @throws \InvalidArgumentException
      */
     protected function preparePatchRequest()
@@ -169,6 +173,7 @@ class Request
 
     /**
      * @return void
+     *
      * @throws \InvalidArgumentException
      */
     protected function prepareDeleteRequest()
@@ -190,6 +195,7 @@ class Request
 
     /**
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     protected function getUriForRequest(): string
@@ -203,6 +209,7 @@ class Request
 
     /**
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     protected function getRequestData(): string

@@ -17,6 +17,7 @@ trait RequestQueryHandlingTrait
 {
     /**
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     protected function handleQueryRequest(): string

@@ -23,6 +23,7 @@ class JsonHelper
      * @param int $options
      *
      * @return mixed
+     *
      * @throws \McMatters\Ticl\Exceptions\JsonDecodingException
      */
     public static function decode(

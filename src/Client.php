@@ -38,8 +38,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     public function head(string $uri, array $options = []): Response
     {
@@ -51,8 +52,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     public function get(string $uri, array $options = []): Response
     {
@@ -64,8 +66,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     public function post(string $uri, array $options = []): Response
     {
@@ -77,8 +80,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     public function put(string $uri, array $options = []): Response
     {
@@ -90,8 +94,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     public function patch(string $uri, array $options = []): Response
     {
@@ -103,8 +108,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     public function delete(string $uri, array $options = []): Response
     {
@@ -117,8 +123,9 @@ class Client
      * @param array $options
      *
      * @return \McMatters\Ticl\Http\Response
-     * @throws \McMatters\Ticl\Exceptions\RequestException
+     *
      * @throws \InvalidArgumentException
+     * @throws \McMatters\Ticl\Exceptions\RequestException
      */
     protected function call(
         string $method,

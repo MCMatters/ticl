@@ -17,6 +17,7 @@ trait RequestDataHandlingTrait
 {
     /**
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     protected function handleJsonRequestData(): string
@@ -42,6 +43,7 @@ trait RequestDataHandlingTrait
 
     /**
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     protected function handleBodyRequestData(): string
@@ -63,6 +65,7 @@ trait RequestDataHandlingTrait
 
     /**
      * @return mixed
+     *
      * @throws \InvalidArgumentException
      */
     protected function handleBinaryRequestData()
@@ -80,6 +83,7 @@ trait RequestDataHandlingTrait
 
     /**
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     protected function handleFormRequestData(): string
