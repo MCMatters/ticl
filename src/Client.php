@@ -118,6 +118,25 @@ class Client
     }
 
     /**
+     * @param string $uri
+     *
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    public function getFullUrl(string $uri): string
+    {
+        if (!empty($this->config['base_uri'])) {
+            return rtrim($this->config['base_uri'], '/').'/'.ltrim($uri, '/');
+        }
+
+        if (null === parse_url($uri, PHP_URL_HOST)) {
+            throw new InvalidArgumentException('"uri" must be a valid url');
+        }
+
+        return $uri;
+    }
+
+    /**
      * @param string $method
      * @param string $uri
      * @param array $options
@@ -134,30 +153,11 @@ class Client
     ): Response {
         $request = new Request(
             $method,
-            $this->prepareUri($uri),
+            $this->getFullUrl($uri),
             $this->prepareOptions($options)
         );
 
         return $request->send();
-    }
-
-    /**
-     * @param string $uri
-     *
-     * @return string
-     * @throws \InvalidArgumentException
-     */
-    protected function prepareUri(string $uri): string
-    {
-        if (!empty($this->config['base_uri'])) {
-            return rtrim($this->config['base_uri'], '/').'/'.ltrim($uri, '/');
-        }
-
-        if (null === parse_url($uri, PHP_URL_HOST)) {
-            throw new InvalidArgumentException('"uri" must be a valid url');
-        }
-
-        return $uri;
     }
 
     /**
