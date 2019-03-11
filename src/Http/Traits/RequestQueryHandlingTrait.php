@@ -5,8 +5,9 @@ declare(strict_types = 1);
 namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
+use const PHP_QUERY_RFC1738;
 use const false;
-use function array_map, http_build_query, is_array, is_bool, is_string, ltrim;
+use function array_map, http_build_query, ini_get, is_array, is_bool, is_string, ltrim;
 
 /**
  * Trait RequestQueryHandlingTrait
@@ -29,7 +30,7 @@ trait RequestQueryHandlingTrait
 
             $query = $this->options['query'];
 
-            if ($this->options['bool_as_string'] ?? false) {
+            if ($this->options['query_params']['bool_as_string'] ?? false) {
                 $query = array_map(
                     function ($item) {
                         if (is_bool($item)) {
@@ -42,7 +43,14 @@ trait RequestQueryHandlingTrait
                 );
             }
 
-            return $this->uri.'?'.http_build_query($query);
+            $query = http_build_query(
+                $query,
+                $this->options['query_params']['numeric_prefix'] ?? '',
+                $this->options['query_params']['arg_separator'] ?? ini_get('arg_separator.output'),
+                $this->options['query_params']['enc_type'] ?? PHP_QUERY_RFC1738
+            );
+
+            return "{$this->uri}?{$query}";
         }
 
         if (is_string($this->options['query'])) {
