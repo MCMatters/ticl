@@ -119,12 +119,17 @@ class Client
 
     /**
      * @param string $uri
+     * @param array $options
      *
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function getFullUrl(string $uri): string
+    public function getFullUrl(string $uri, array $options = []): string
     {
+        if (!empty($uri) && ($options['skip_base_uri'] ?? false)) {
+            return $uri;
+        }
+
         if (!empty($this->config['base_uri'])) {
             return rtrim($this->config['base_uri'], '/').'/'.ltrim($uri, '/');
         }
@@ -153,7 +158,7 @@ class Client
     ): Response {
         $request = new Request(
             $method,
-            $this->getFullUrl($uri),
+            $this->getFullUrl($uri, $options),
             $this->prepareOptions($options)
         );
 

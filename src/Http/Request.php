@@ -14,7 +14,7 @@ use const CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST, CURLOPT_FAILONERROR,
     CURLOPT_NOBODY, CURLOPT_POSTFIELDS, CURLOPT_RETURNTRANSFER, CURLOPT_URL;
 use const false, null, true;
 use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
-    curl_setopt, method_exists, ucfirst;
+    curl_setopt, is_bool, method_exists, ucfirst;
 
 /**
  * Class Request
@@ -99,14 +99,14 @@ class Request
         $response = curl_exec($this->curl);
 
         if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
-            throw new RequestException($response, $this->curl);
+            throw new RequestException(is_bool($response) ? '' : $response, $this->curl);
         }
 
         if (false === $response) {
             throw new RequestException('', $this->curl);
         }
 
-        return new Response($this->curl, $response);
+        return new Response($this->curl, is_bool($response) ? '' : $response);
     }
 
     /**
@@ -190,6 +190,8 @@ class Request
         if ($this->options['follow_redirects'] ?? true) {
             curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($this->curl, CURLOPT_MAXREDIRS, $this->options['max_redirects'] ?? 5);
+        } else {
+            curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, false);
         }
     }
 

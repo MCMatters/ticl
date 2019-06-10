@@ -6,7 +6,7 @@ namespace McMatters\Ticl\Http;
 
 use McMatters\Ticl\Helpers\JsonHelper;
 use McMatters\Ticl\Traits\HeadersTrait;
-use const CURLINFO_HEADER_SIZE;
+use const CURLINFO_HEADER_SIZE, CURLINFO_HTTP_CODE;
 use function array_filter, array_pop, count, curl_getinfo, explode, preg_match, substr, trim;
 
 /**
@@ -46,7 +46,8 @@ class Response
      */
     public function __construct($curl, string $response)
     {
-        $this->setHeaderSize($curl)
+        $this->setStatusCodeFromCurlInfo($curl)
+            ->setHeaderSize($curl)
             ->setHeaders($response)
             ->setBody($response);
     }
@@ -115,6 +116,10 @@ class Response
 
         $responseHeaders = array_filter(explode("\r\n\r\n", $headers));
 
+        if (count($responseHeaders) === 0) {
+            return $this;
+        }
+
         foreach (explode("\r\n", array_pop($responseHeaders)) as $header) {
             $header = trim($header);
 
@@ -141,13 +146,25 @@ class Response
     }
 
     /**
-     * @param int $code
+     * @param int|null $code
      *
      * @return self
      */
     protected function setStatusCode(int $code): self
     {
         $this->statusCode = $code;
+
+        return $this;
+    }
+
+    /**
+     * @param resource $curl
+     *
+     * @return self
+     */
+    protected function setStatusCodeFromCurlInfo($curl): self
+    {
+        $this->statusCode = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
         return $this;
     }
