@@ -24,6 +24,10 @@ trait RequestQueryHandlingTrait
      */
     protected function handleQueryRequest(): string
     {
+        if (empty($this->options['query'])) {
+            return $this->uri;
+        }
+
         if (is_array($this->options['query'])) {
             $baseQueryString = parse_url($this->uri, PHP_URL_QUERY);
             $baseQuery = [];
@@ -33,14 +37,10 @@ trait RequestQueryHandlingTrait
                 $this->uri = mb_substr($this->uri, 0, mb_strpos($this->uri, '?'));
             }
 
-            if ($this->options['skip_base_uri']) {
+            if ($this->options['skip_base_uri'] ?? false) {
                 $this->options['query'] = $baseQuery + $this->options['query'];
             } else {
                 $this->options['query'] += $baseQuery;
-            }
-
-            if (empty($this->options['query'])) {
-                return $this->uri;
             }
 
             $query = $this->options['query'];
