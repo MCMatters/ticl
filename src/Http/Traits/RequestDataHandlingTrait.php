@@ -70,7 +70,7 @@ trait RequestDataHandlingTrait
      */
     protected function handleBinaryRequestData()
     {
-        if (!is_resource($this->options['binary']) ||
+        if (!is_resource($this->options['binary']) &&
             !is_string($this->options['binary'])
         ) {
             throw new InvalidArgumentException(

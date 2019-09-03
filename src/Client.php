@@ -172,6 +172,6 @@ class Client
      */
     protected function prepareOptions(array $options = []): array
     {
-        return array_replace_recursive($options, $this->config);
+        return array_replace_recursive($this->config, $options);
     }
 }
