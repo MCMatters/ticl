@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
+
 use function basename, gettype, http_build_query, implode, is_array, is_callable,
     is_resource, is_string, json_encode, sha1, stream_get_contents, uniqid;
 

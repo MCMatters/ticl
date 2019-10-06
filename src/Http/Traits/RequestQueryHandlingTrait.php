@@ -5,10 +5,11 @@ declare(strict_types = 1);
 namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
-use const PHP_QUERY_RFC1738;
-use const false;
+
 use function array_map, http_build_query, ini_get, is_array, is_bool, is_string,
     ltrim, parse_str, parse_url;
+
+use const false, PHP_QUERY_RFC1738;
 
 /**
  * Trait RequestQueryHandlingTrait

@@ -5,9 +5,10 @@ declare(strict_types = 1);
 namespace McMatters\Ticl\Helpers;
 
 use McMatters\Ticl\Exceptions\JsonDecodingException;
-use const JSON_ERROR_NONE;
-use const true;
+
 use function json_decode, json_last_error, json_last_error_msg;
+
+use const true, JSON_ERROR_NONE;
 
 /**
  * Class JsonHelper

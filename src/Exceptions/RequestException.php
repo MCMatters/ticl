@@ -8,10 +8,11 @@ use McMatters\Ticl\Enums\HttpStatusCode;
 use McMatters\Ticl\Helpers\JsonHelper;
 use RuntimeException;
 use Throwable;
-use const CURLINFO_HEADER_SIZE;
-use const true;
+
 use function curl_errno, curl_getinfo, get_defined_constants, strpos, strtolower,
     str_replace, substr, ucfirst;
+
+use const true, CURLINFO_HEADER_SIZE;
 
 /**
  * Class RequestException

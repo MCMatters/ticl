@@ -7,9 +7,10 @@ namespace McMatters\Ticl;
 use InvalidArgumentException;
 use McMatters\Ticl\Http\Request;
 use McMatters\Ticl\Http\Response;
-use const null;
-use const PHP_URL_HOST;
+
 use function array_replace_recursive, ltrim, parse_url, rtrim;
+
+use const null, PHP_URL_HOST;
 
 /**
  * Class Client
@@ -139,6 +140,30 @@ class Client
         }
 
         return $uri;
+    }
+
+    /**
+     * @param array $query
+     *
+     * @return self
+     */
+    public function withQuery(array $query): self
+    {
+        $this->config['query'] = $query;
+
+        return $this;
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return self
+     */
+    public function withJson(array $data): self
+    {
+        $this->config['json'] = $data;
+
+        return $this;
     }
 
     /**

@@ -6,8 +6,10 @@ namespace McMatters\Ticl\Http;
 
 use McMatters\Ticl\Helpers\JsonHelper;
 use McMatters\Ticl\Traits\HeadersTrait;
-use const CURLINFO_HEADER_SIZE, CURLINFO_HTTP_CODE;
+
 use function array_filter, array_pop, count, curl_getinfo, explode, preg_match, substr, trim;
+
+use const CURLINFO_HEADER_SIZE, CURLINFO_HTTP_CODE;
 
 /**
  * Class Response
