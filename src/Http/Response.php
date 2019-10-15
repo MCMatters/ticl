@@ -132,7 +132,7 @@ class Response
             $values = explode(': ', $header, 2);
 
             if (count($values) !== 2) {
-                if (preg_match('/^HTTP\/\d\.\d (?<code>\d{3}) [a-zA-Z\s]+$/', $header, $match)) {
+                if (preg_match('/^HTTP\/\d(?:\.\d)? (?<code>\d{3})(?:[a-zA-Z\s])*$/', $header, $match)) {
                     $this->setStatusCode((int) $match['code']);
                 }
 

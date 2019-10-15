@@ -123,6 +123,7 @@ class Client
      * @param array $options
      *
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     public function getFullUrl(string $uri, array $options = []): string
@@ -132,7 +133,13 @@ class Client
         }
 
         if (!empty($this->config['base_uri'])) {
-            return rtrim($this->config['base_uri'], '/').'/'.ltrim($uri, '/');
+            $uri = ltrim($uri, '/');
+
+            if ('' === $uri) {
+                return rtrim($this->config['base_uri'], '/');
+            }
+
+            return rtrim($this->config['base_uri'], '/')."/{$uri}";
         }
 
         if (null === parse_url($uri, PHP_URL_HOST)) {
