@@ -151,24 +151,30 @@ class Client
 
     /**
      * @param array $query
+     * @param bool $replace
      *
      * @return self
      */
-    public function withQuery(array $query): self
+    public function withQuery(array $query, bool $replace = false): self
     {
-        $this->config['query'] = $query;
+        $this->config['query'] = $replace
+            ? $query
+            : array_merge_recursive($this->config['query'] ?? [], $query);
 
         return $this;
     }
 
     /**
      * @param array $data
+     * @param bool $replace
      *
      * @return self
      */
-    public function withJson(array $data): self
+    public function withJson(array $data, bool $replace = false): self
     {
-        $this->config['json'] = $data;
+        $this->config['json'] = $replace
+            ? $data
+            : array_merge_recursive($this->config['query'] ?? [], $data);
 
         return $this;
     }
