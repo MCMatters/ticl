@@ -159,7 +159,7 @@ class Client
     {
         $this->config['query'] = $replace
             ? $query
-            : array_merge_recursive($this->config['query'] ?? [], $query);
+            : array_replace_recursive($this->config['query'] ?? [], $query);
 
         return $this;
     }
@@ -174,7 +174,7 @@ class Client
     {
         $this->config['json'] = $replace
             ? $data
-            : array_merge_recursive($this->config['query'] ?? [], $data);
+            : array_replace_recursive($this->config['query'] ?? [], $data);
 
         return $this;
     }
