@@ -174,7 +174,7 @@ class Client
     {
         $this->config['json'] = $replace
             ? $data
-            : array_replace_recursive($this->config['query'] ?? [], $data);
+            : array_replace_recursive($this->config['json'] ?? [], $data);
 
         return $this;
     }
