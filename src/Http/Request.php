@@ -25,7 +25,9 @@ use const false, null, true, CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST,
  */
 class Request
 {
-    use HeadersTrait, RequestDataHandlingTrait, RequestQueryHandlingTrait;
+    use HeadersTrait;
+    use RequestDataHandlingTrait;
+    use RequestQueryHandlingTrait;
 
     /**
      * @var resource
@@ -65,11 +67,8 @@ class Request
         array $options = []
     ) {
         $this->curl = curl_init();
-        $this->setHeaders($options);
 
-        $this->uri = $uri;
-        $this->method = $method;
-        $this->options = $options;
+        $this->setDefaults($method, $uri, $options);
     }
 
     /**
@@ -80,6 +79,26 @@ class Request
         if ($this->curl) {
             curl_close($this->curl);
         }
+    }
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Request
+     */
+    public function setDefaults(
+        string $method,
+        string $uri,
+        array $options = []
+    ): self {
+        $this->setHeaders($options)
+            ->setUri($uri)
+            ->setMethod($method)
+            ->setOptions($options);
+
+        return $this;
     }
 
     /**
@@ -277,15 +296,54 @@ class Request
         return $headers;
     }
 
+
     /**
      * @param array $options
      *
-     * @return void
+     * @return \McMatters\Ticl\Http\Request
      */
-    protected function setHeaders(array &$options)
+    protected function setHeaders(array &$options): self
     {
         $this->headers = $options['headers'] ?? [];
 
         unset($options['headers']);
+
+        return $this;
+    }
+
+    /**
+     * @param string $uri
+     *
+     * @return \McMatters\Ticl\Http\Request
+     */
+    protected function setUri(string $uri): self
+    {
+        $this->uri = $uri;
+
+        return $this;
+    }
+
+    /**
+     * @param string $method
+     *
+     * @return \McMatters\Ticl\Http\Request
+     */
+    protected function setMethod(string $method): self
+    {
+        $this->method = $method;
+
+        return $this;
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return \McMatters\Ticl\Http\Request
+     */
+    protected function setOptions(array $options): self
+    {
+        $this->options = $options;
+
+        return $this;
     }
 }

@@ -10,7 +10,7 @@ use McMatters\Ticl\Http\Response;
 
 use function array_replace_recursive, ltrim, parse_url, rtrim;
 
-use const null, PHP_URL_HOST;
+use const false, null, PHP_URL_HOST;
 
 /**
  * Class Client
@@ -23,6 +23,11 @@ class Client
      * @var array
      */
     protected $config;
+
+    /**
+     * @var \McMatters\Ticl\Http\Request|null
+     */
+    protected $request;
 
     /**
      * Client constructor.
@@ -194,11 +199,20 @@ class Client
         string $uri,
         array $options = []
     ): Response {
-        $request = new Request(
-            $method,
-            $this->getFullUrl($uri, $options),
-            $this->prepareOptions($options)
-        );
+        $uri = $this->getFullUrl($uri, $options);
+        $options = $this->prepareOptions($options);
+
+        if (!($options['keep_alive'] ?? false)) {
+            $request = new Request($method, $uri, $options);
+        } else {
+            if (null === $this->request) {
+                $this->request = $request = new Request($method, $uri, $options);
+            } else {
+                $request = $this->request->setDefaults($method, $uri, $options);
+            }
+
+            unset($options['keep_alive']);
+        }
 
         return $request->send();
     }
