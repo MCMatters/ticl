@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace McMatters\Ticl\Http\Traits;
 
@@ -93,7 +93,10 @@ trait RequestDataHandlingTrait
         $boundary = "-------------{$boundary}";
         $eol = "\r\n";
 
-        $this->setHeader('content-type', "multipart/form-data; boundary={$boundary}");
+        $this->setHeader(
+            'content-type',
+            "multipart/form-data; boundary={$boundary}"
+        );
 
         $content = [];
 

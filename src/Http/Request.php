@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace McMatters\Ticl\Http;
 
@@ -59,8 +59,11 @@ class Request
      * @param string $uri
      * @param array $options
      */
-    public function __construct(string $method, string $uri, array $options = [])
-    {
+    public function __construct(
+        string $method,
+        string $uri,
+        array $options = []
+    ) {
         $this->curl = curl_init();
         $this->setHeaders($options);
 

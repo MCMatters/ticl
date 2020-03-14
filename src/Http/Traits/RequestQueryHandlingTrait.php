@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace McMatters\Ticl\Http\Traits;
 
@@ -73,6 +73,8 @@ trait RequestQueryHandlingTrait
             return $this->uri.'?'.ltrim($this->options['query'], '?');
         }
 
-        throw new InvalidArgumentException('"query" must be as an array or string');
+        throw new InvalidArgumentException(
+            '"query" must be as an array or string'
+        );
     }
 }
