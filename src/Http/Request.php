@@ -11,7 +11,7 @@ use McMatters\Ticl\Http\Traits\RequestQueryHandlingTrait;
 use McMatters\Ticl\Traits\HeadersTrait;
 
 use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
-    curl_setopt, is_bool, method_exists, ucfirst;
+    curl_reset, curl_setopt, is_bool, method_exists, ucfirst;
 
 use const false, null, true, CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST,
     CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_HEADER,
@@ -138,6 +138,8 @@ class Request
      */
     protected function setOptionsDependOnMethod()
     {
+        curl_reset($this->curl);
+
         $method = 'prepare'.ucfirst($this->method).'Request';
 
         if (method_exists($this, $method)) {
