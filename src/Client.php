@@ -30,6 +30,11 @@ class Client
     protected $request;
 
     /**
+     * @var array
+     */
+    protected $with = [];
+
+    /**
      * Client constructor.
      *
      * @param array $config
@@ -162,9 +167,9 @@ class Client
      */
     public function withQuery(array $query, bool $replace = false): self
     {
-        $this->config['query'] = $replace
+        $this->with['query'] = $replace
             ? $query
-            : array_replace_recursive($this->config['query'] ?? [], $query);
+            : array_replace_recursive($this->with['query'] ?? [], $query);
 
         return $this;
     }
@@ -177,9 +182,24 @@ class Client
      */
     public function withJson(array $data, bool $replace = false): self
     {
-        $this->config['json'] = $replace
+        $this->with['json'] = $replace
             ? $data
-            : array_replace_recursive($this->config['json'] ?? [], $data);
+            : array_replace_recursive($this->with['json'] ?? [], $data);
+
+        return $this;
+    }
+
+    /**
+     * @param array $data
+     * @param bool $replace
+     *
+     * @return self
+     */
+    public function withHeaders(array $data, bool $replace = false): self
+    {
+        $this->with['headers'] = $replace
+            ? $data
+            : array_replace_recursive($this->with['headers'] ?? [], $data);
 
         return $this;
     }
@@ -214,6 +234,8 @@ class Client
             unset($options['keep_alive']);
         }
 
+        $this->with = [];
+
         return $request->send();
     }
 
@@ -224,6 +246,6 @@ class Client
      */
     protected function prepareOptions(array $options = []): array
     {
-        return array_replace_recursive($this->config, $options);
+        return array_replace_recursive($this->config, $this->with, $options);
     }
 }

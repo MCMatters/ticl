@@ -11,7 +11,7 @@ composer require mcmatters/ticl
 ```php
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 require 'vendor/autoload.php';
 
@@ -20,8 +20,10 @@ $client = new \McMatters\Ticl\Client();
 try {
     $response = $client->get('http://example.com/api/user?token=test');
     $user = $response->json();
-} catch (Throwable $e) {
-    $error = json_decode($e->getMessage(), true);
+} catch (\McMatters\Ticl\Exceptions\RequestException $e) {
+    $error = $e->asJson();
+} catch (\Throwable $e) {
+    $error = $e->getMessage();
 }
 ```
 
