@@ -109,6 +109,8 @@ class Request
      */
     public function send(): Response
     {
+        curl_reset($this->curl);
+
         $this->setCurlOptions();
         $this->setOptionsDependOnMethod();
 
@@ -139,8 +141,6 @@ class Request
      */
     protected function setOptionsDependOnMethod()
     {
-        curl_reset($this->curl);
-
         $method = 'prepare'.ucfirst($this->method).'Request';
 
         if (method_exists($this, $method)) {
