@@ -109,6 +109,7 @@ class Request
      */
     public function send(): Response
     {
+        $this->setCurlOptions();
         $this->setOptionsDependOnMethod();
 
         $url = $this->getUriForRequest();
@@ -144,6 +145,16 @@ class Request
 
         if (method_exists($this, $method)) {
             $this->{$method}();
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function setCurlOptions()
+    {
+        foreach ($this->options['curl'] ?? [] as $key => $value) {
+            curl_setopt($this->curl, $key, $value);
         }
     }
 
