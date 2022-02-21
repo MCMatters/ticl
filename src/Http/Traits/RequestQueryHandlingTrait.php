@@ -6,10 +6,18 @@ namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
 
-use function array_map, http_build_query, ini_get, is_array, is_bool, is_string,
-    ltrim, parse_str, parse_url;
+use function array_map;
+use function http_build_query;
+use function ini_get;
+use function is_array;
+use function is_bool;
+use function is_string;
+use function ltrim;
+use function parse_str;
+use function parse_url;
 
-use const false, PHP_QUERY_RFC1738;
+use const false;
+use const PHP_QUERY_RFC1738;
 
 /**
  * Trait RequestQueryHandlingTrait

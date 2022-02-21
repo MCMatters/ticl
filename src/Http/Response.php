@@ -6,10 +6,7 @@ namespace McMatters\Ticl\Http;
 
 use McMatters\Ticl\Helpers\JsonHelper;
 use McMatters\Ticl\Traits\HeadersTrait;
-
-use function array_filter, array_pop, count, curl_getinfo, explode, preg_match, substr, trim;
-
-use const CURLINFO_HEADER_SIZE, CURLINFO_HTTP_CODE;
+use McMatters\Ticl\Traits\ResponsableTrait;
 
 /**
  * Class Response
@@ -19,6 +16,7 @@ use const CURLINFO_HEADER_SIZE, CURLINFO_HTTP_CODE;
 class Response
 {
     use HeadersTrait;
+    use ResponsableTrait;
 
     /**
      * @var int
@@ -100,9 +98,21 @@ class Response
      *
      * @return self
      */
+    protected function setStatusCodeFromCurlInfo($curl): self
+    {
+        $this->statusCode = $this->parseStatusCodeFromCurlInfo($curl);
+
+        return $this;
+    }
+
+    /**
+     * @param resource $curl
+     *
+     * @return self
+     */
     protected function setHeaderSize($curl): self
     {
-        $this->headerSize = curl_getinfo($curl, CURLINFO_HEADER_SIZE) ?: 0;
+        $this->headerSize = $this->parseHeaderSize($curl);
 
         return $this;
     }
@@ -114,35 +124,10 @@ class Response
      */
     protected function setHeaders(string $response): self
     {
-        $headers = substr($response, 0, $this->headerSize);
+        $headers = $this->parseHeaders($response, $this->headerSize);
 
-        $responseHeaders = array_filter(explode("\r\n\r\n", $headers));
-
-        if (count($responseHeaders) === 0) {
-            return $this;
-        }
-
-        foreach (explode("\r\n", array_pop($responseHeaders)) as $header) {
-            $header = trim($header);
-
-            if (!$header) {
-                continue;
-            }
-
-            $values = explode(': ', $header, 2);
-
-            if (count($values) !== 2) {
-                if (preg_match('/^HTTP\/\d(?:\.\d)? (?<code>\d{3})(?:[a-zA-Z\s])*$/', $header, $match)) {
-                    $this->setStatusCode((int) $match['code']);
-                }
-
-                continue;
-            }
-
-            list($name, $value) = $values;
-
-            $this->headers[$name] = $value;
-        }
+        $this->headers = $headers['headers'] ?? [];
+        $this->statusCode = $headers['code'] ?? $this->statusCode;
 
         return $this;
     }
@@ -160,25 +145,13 @@ class Response
     }
 
     /**
-     * @param resource $curl
-     *
-     * @return self
-     */
-    protected function setStatusCodeFromCurlInfo($curl): self
-    {
-        $this->statusCode = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        return $this;
-    }
-
-    /**
      * @param string $response
      *
      * @return self
      */
     protected function setBody(string $response): self
     {
-        $this->body = substr($response, $this->headerSize);
+        $this->body = $this->parseBody($response, $this->headerSize);
 
         return $this;
     }

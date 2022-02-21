@@ -10,13 +10,31 @@ use McMatters\Ticl\Http\Traits\RequestDataHandlingTrait;
 use McMatters\Ticl\Http\Traits\RequestQueryHandlingTrait;
 use McMatters\Ticl\Traits\HeadersTrait;
 
-use function array_key_exists, curl_close, curl_exec, curl_getinfo, curl_init,
-    curl_reset, curl_setopt, is_bool, method_exists, ucfirst;
+use function array_key_exists;
+use function curl_close;
+use function curl_exec;
+use function curl_getinfo;
+use function curl_init;
+use function curl_reset;
+use function curl_setopt;
+use function is_bool;
+use function method_exists;
+use function ucfirst;
 
-use const false, null, true, CURLINFO_HTTP_CODE, CURLOPT_CUSTOMREQUEST,
-    CURLOPT_FAILONERROR, CURLOPT_FOLLOWLOCATION, CURLOPT_HEADER,
-    CURLOPT_HTTPHEADER, CURLOPT_MAXREDIRS, CURLOPT_NOBODY, CURLOPT_POSTFIELDS,
-    CURLOPT_RETURNTRANSFER, CURLOPT_URL;
+use const CURLINFO_HTTP_CODE;
+use const CURLOPT_CUSTOMREQUEST;
+use const CURLOPT_FAILONERROR;
+use const CURLOPT_FOLLOWLOCATION;
+use const CURLOPT_HEADER;
+use const CURLOPT_HTTPHEADER;
+use const CURLOPT_MAXREDIRS;
+use const CURLOPT_NOBODY;
+use const CURLOPT_POSTFIELDS;
+use const CURLOPT_RETURNTRANSFER;
+use const CURLOPT_URL;
+use const false;
+use const null;
+use const true;
 
 /**
  * Class Request

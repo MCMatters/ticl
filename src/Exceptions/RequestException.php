@@ -6,13 +6,20 @@ namespace McMatters\Ticl\Exceptions;
 
 use McMatters\Ticl\Enums\HttpStatusCode;
 use McMatters\Ticl\Helpers\JsonHelper;
+use McMatters\Ticl\Traits\HeadersTrait;
+use McMatters\Ticl\Traits\ResponsableTrait;
 use RuntimeException;
 use Throwable;
 
-use function curl_errno, curl_getinfo, get_defined_constants, strpos, strtolower,
-    str_replace, substr, ucfirst;
+use function curl_errno;
+use function get_defined_constants;
+use function strpos;
+use function strtolower;
+use function str_replace;
+use function substr;
+use function ucfirst;
 
-use const true, CURLINFO_HEADER_SIZE;
+use const true;
 
 /**
  * Class RequestException
@@ -21,6 +28,19 @@ use const true, CURLINFO_HEADER_SIZE;
  */
 class RequestException extends RuntimeException
 {
+    use HeadersTrait;
+    use ResponsableTrait;
+
+    /**
+     * @var array
+     */
+    protected $headers = [];
+
+    /**
+     * @var int
+     */
+    protected $headerSize;
+
     /**
      * RequestException constructor.
      *
@@ -29,7 +49,10 @@ class RequestException extends RuntimeException
      */
     public function __construct(string $response, $curl)
     {
-        $this->setMessage($response, $curl)->setCode($response, $curl);
+        $this->setCode($response, $curl)
+            ->setHeaderSize($curl)
+            ->setHeaders($response)
+            ->setMessage($response, $curl);
 
         parent::__construct($this->message, $this->code);
     }
@@ -47,6 +70,41 @@ class RequestException extends RuntimeException
     }
 
     /**
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @param resource $curl
+     *
+     * @return self
+     */
+    protected function setHeaderSize($curl): self
+    {
+        $this->headerSize = $this->parseHeaderSize($curl);
+
+        return $this;
+    }
+
+    /**
+     * @param string $response
+     *
+     * @return self
+     */
+    protected function setHeaders(string $response): self
+    {
+        $headers = $this->parseHeaders($response, $this->headerSize);
+
+        $this->headers = $headers['headers'] ?? [];
+        $this->code = $headers['code'] ?? $this->code;
+
+        return $this;
+    }
+
+    /**
      * @param string $response
      * @param resource $curl
      *
@@ -54,16 +112,9 @@ class RequestException extends RuntimeException
      */
     protected function setMessage(string $response, $curl): self
     {
-        if ('' === $response) {
-            $this->message = $this->getCurlErrorMessage(curl_errno($curl));
-
-            return $this;
-        }
-
-        $this->message = substr(
-            $response,
-            (curl_getinfo($curl, CURLINFO_HEADER_SIZE) ?: 0)
-        );
+        $this->message = '' === $response
+            ? $this->getCurlErrorMessage(curl_errno($curl))
+            : $this->parseBody($response, $this->headerSize);
 
         return $this;
     }
@@ -78,7 +129,7 @@ class RequestException extends RuntimeException
     {
         $this->code = '' === $response
             ? HttpStatusCode::INTERNAL_SERVER_ERROR
-            : curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            : $this->parseStatusCodeFromCurlInfo($curl);
 
         return $this;
     }

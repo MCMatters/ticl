@@ -8,9 +8,14 @@ use InvalidArgumentException;
 use McMatters\Ticl\Http\Request;
 use McMatters\Ticl\Http\Response;
 
-use function array_replace_recursive, ltrim, parse_url, rtrim;
+use function array_replace_recursive;
+use function ltrim;
+use function parse_url;
+use function rtrim;
 
-use const false, null, PHP_URL_HOST;
+use const false;
+use const null;
+use const PHP_URL_HOST;
 
 /**
  * Class Client

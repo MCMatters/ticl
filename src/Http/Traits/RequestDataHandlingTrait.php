@@ -6,8 +6,18 @@ namespace McMatters\Ticl\Http\Traits;
 
 use InvalidArgumentException;
 
-use function basename, gettype, http_build_query, implode, is_array, is_callable,
-    is_resource, is_string, json_encode, sha1, stream_get_contents, uniqid;
+use function basename;
+use function gettype;
+use function http_build_query;
+use function implode;
+use function is_array;
+use function is_callable;
+use function is_resource;
+use function is_string;
+use function json_encode;
+use function sha1;
+use function stream_get_contents;
+use function uniqid;
 
 /**
  * Trait RequestDataHandlingTrait

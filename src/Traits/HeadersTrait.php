@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Traits;
 
-use function is_callable, strtolower;
+use function is_callable;
+use function strtolower;
 
-use const false, true;
+use const false;
+use const true;
 
 /**
  * Trait HeadersTrait

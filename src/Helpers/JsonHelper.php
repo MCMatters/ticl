@@ -6,9 +6,12 @@ namespace McMatters\Ticl\Helpers;
 
 use McMatters\Ticl\Exceptions\JsonDecodingException;
 
-use function json_decode, json_last_error, json_last_error_msg;
+use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
 
-use const true, JSON_ERROR_NONE;
+use const JSON_ERROR_NONE;
+use const true;
 
 /**
  * Class JsonHelper
