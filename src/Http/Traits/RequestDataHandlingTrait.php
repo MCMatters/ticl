@@ -12,6 +12,7 @@ use function http_build_query;
 use function implode;
 use function is_array;
 use function is_callable;
+use function is_object;
 use function is_resource;
 use function is_string;
 use function json_encode;
@@ -19,17 +20,11 @@ use function sha1;
 use function stream_get_contents;
 use function uniqid;
 
-/**
- * Trait RequestDataHandlingTrait
- *
- * @package McMatters\Ticl\Http\Traits
- */
 trait RequestDataHandlingTrait
 {
     /**
-     * @return string
-     *
      * @throws \InvalidArgumentException
+     * @throws \JsonException
      */
     protected function handleJsonRequestData(): string
     {
@@ -37,15 +32,16 @@ trait RequestDataHandlingTrait
             $this->setHeader('content-type', 'application/json');
         }
 
-        if (is_array($this->options['json'])) {
-            return json_encode($this->filterRequestData(
-                $this->options['json']
-            ));
+        if (is_array($this->options['json']) || is_object($this->options['json'])) {
+            return json_encode(
+                $this->filterRequestData($this->options['json']),
+                JSON_THROW_ON_ERROR,
+            );
         }
 
         if (!is_string($this->options['json'])) {
             throw new InvalidArgumentException(
-                '"json" key must be as an array or string'
+                '"json" key must be as an array, object or string',
             );
         }
 
@@ -53,21 +49,19 @@ trait RequestDataHandlingTrait
     }
 
     /**
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     protected function handleBodyRequestData(): string
     {
         if (is_array($this->options['body'])) {
             return http_build_query($this->filterRequestData(
-                $this->options['body']
+                $this->options['body'],
             ));
         }
 
         if (!is_string($this->options['body'])) {
             throw new InvalidArgumentException(
-                '"body" key must be an array or string'
+                '"body" key must be an array or string',
             );
         }
 
@@ -81,11 +75,12 @@ trait RequestDataHandlingTrait
      */
     protected function handleBinaryRequestData()
     {
-        if (!is_resource($this->options['binary']) &&
+        if (
+            !is_resource($this->options['binary']) &&
             !is_string($this->options['binary'])
         ) {
             throw new InvalidArgumentException(
-                'Binary must be a resource or string'
+                'Binary must be a resource or string',
             );
         }
 
@@ -93,8 +88,6 @@ trait RequestDataHandlingTrait
     }
 
     /**
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     protected function handleFormRequestData(): string
@@ -113,7 +106,7 @@ trait RequestDataHandlingTrait
         foreach ($this->options['form'] as $item) {
             if (!isset($item['name'], $item['contents'])) {
                 throw new InvalidArgumentException(
-                    '"form" expects "name" and "contents" values'
+                    '"form" expects "name" and "contents" values',
                 );
             }
 
@@ -140,9 +133,11 @@ trait RequestDataHandlingTrait
                 case 'resource':
                     $field .= stream_get_contents($item['contents']);
                     break;
+
                 case 'string':
                     $field .= $item['contents'];
                     break;
+
                 case 'object':
                     if (is_callable([$item['content'], '__toString'])) {
                         $field .= ((string) $item['content']);

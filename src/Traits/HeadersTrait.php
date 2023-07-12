@@ -5,29 +5,19 @@ declare(strict_types=1);
 namespace McMatters\Ticl\Traits;
 
 use function is_callable;
-use function strtolower;
+use function mb_strtolower;
 
 use const false;
 use const true;
 
-/**
- * Trait HeadersTrait
- *
- * @package McMatters\Ticl\Traits
- */
 trait HeadersTrait
 {
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
     public function hasHeader(string $name): bool
     {
-        $name = strtolower($name);
+        $name = mb_strtolower($name);
 
         foreach ($this->headers as $key => $value) {
-            if (strtolower($key) === $name) {
+            if (mb_strtolower($key) === $name) {
                 return true;
             }
         }
@@ -35,11 +25,6 @@ trait HeadersTrait
         return false;
     }
 
-    /**
-     * @param array $names
-     *
-     * @return bool
-     */
     public function hasHeaders(array $names): bool
     {
         foreach ($names as $name) {
@@ -52,7 +37,6 @@ trait HeadersTrait
     }
 
     /**
-     * @param string $name
      * @param mixed $default
      *
      * @return mixed
@@ -71,10 +55,7 @@ trait HeadersTrait
     }
 
     /**
-     * @param string $key
      * @param mixed $value
-     *
-     * @return self
      */
     protected function setHeader(string $key, $value): self
     {

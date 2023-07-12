@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Http;
 
+use CurlHandle;
 use McMatters\Ticl\Enums\HttpStatusCode;
 use McMatters\Ticl\Exceptions\RequestException;
 use McMatters\Ticl\Http\Traits\RequestDataHandlingTrait;
@@ -36,80 +37,45 @@ use const false;
 use const null;
 use const true;
 
-/**
- * Class Request
- *
- * @package McMatters\Ticl\Http
- */
 class Request
 {
     use HeadersTrait;
     use RequestDataHandlingTrait;
     use RequestQueryHandlingTrait;
 
-    /**
-     * @var resource
-     */
-    protected $curl;
+    protected ?CurlHandle $curl;
 
-    /**
-     * @var string
-     */
-    protected $uri;
+    protected string $uri;
 
-    /**
-     * @var string
-     */
-    protected $method;
+    protected string $method;
 
-    /**
-     * @var array
-     */
-    protected $headers = [];
+    protected array $headers = [];
 
-    /**
-     * @var array
-     */
-    protected $options = [];
+    protected array $options = [];
 
-    /**
-     * Request constructor.
-     *
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     */
     public function __construct(
         string $method,
         string $uri,
-        array $options = []
+        array $options = [],
     ) {
         $this->curl = curl_init();
 
         $this->setDefaults($method, $uri, $options);
     }
 
-    /**
-     * Request destructor.
-     */
     public function __destruct()
     {
         if ($this->curl) {
             curl_close($this->curl);
+
+            $this->curl = null;
         }
     }
 
-    /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Request
-     */
     public function setDefaults(
         string $method,
         string $uri,
-        array $options = []
+        array $options = [],
     ): self {
         $this->setHeaders($options)
             ->setUri($uri)
@@ -120,8 +86,6 @@ class Request
     }
 
     /**
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -144,20 +108,17 @@ class Request
         $response = curl_exec($this->curl);
 
         if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
-            throw new RequestException(is_bool($response) ? '' : $response, $this->curl);
+            throw new RequestException($this->curl, is_bool($response) ? '' : $response);
         }
 
         if (false === $response) {
-            throw new RequestException('', $this->curl);
+            throw new RequestException($this->curl, '');
         }
 
         return new Response($this->curl, is_bool($response) ? '' : $response);
     }
 
-    /**
-     * @return void
-     */
-    protected function setOptionsDependOnMethod()
+    protected function setOptionsDependOnMethod(): void
     {
         $method = 'prepare'.ucfirst($this->method).'Request';
 
@@ -166,82 +127,62 @@ class Request
         }
     }
 
-    /**
-     * @return void
-     */
-    protected function setCurlOptions()
+    protected function setCurlOptions(): void
     {
         foreach ($this->options['curl'] ?? [] as $key => $value) {
             curl_setopt($this->curl, $key, $value);
         }
     }
 
-    /**
-     * @return void
-     */
-    protected function prepareHeadRequest()
+    protected function prepareHeadRequest(): void
     {
         curl_setopt($this->curl, CURLOPT_NOBODY, true);
         $this->prepareGetRequest();
     }
 
-    /**
-     * @return void
-     */
-    protected function prepareGetRequest()
+    protected function prepareGetRequest(): void
     {
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_FAILONERROR, false);
     }
 
     /**
-     * @return void
-     *
      * @throws \InvalidArgumentException
      */
-    protected function preparePostRequest()
+    protected function preparePostRequest(): void
     {
         $this->prepareGetRequest();
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestData());
     }
 
     /**
-     * @return void
-     *
      * @throws \InvalidArgumentException
      */
-    protected function preparePutRequest()
+    protected function preparePutRequest(): void
     {
         $this->preparePostRequest();
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'PUT');
     }
 
     /**
-     * @return void
-     *
      * @throws \InvalidArgumentException
      */
-    protected function preparePatchRequest()
+    protected function preparePatchRequest(): void
     {
         $this->preparePostRequest();
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
     }
 
     /**
-     * @return void
-     *
      * @throws \InvalidArgumentException
      */
-    protected function prepareDeleteRequest()
+    protected function prepareDeleteRequest(): void
     {
         $this->preparePostRequest();
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
     }
 
-    /**
-     * @return void
-     */
-    protected function setUpRedirects()
+    protected function setUpRedirects(): void
     {
         if ($this->options['follow_redirects'] ?? true) {
             curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
@@ -252,8 +193,6 @@ class Request
     }
 
     /**
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     protected function getUriForRequest(): string
@@ -266,9 +205,8 @@ class Request
     }
 
     /**
-     * @return string
-     *
      * @throws \InvalidArgumentException
+     * @throws \JsonException
      */
     protected function getRequestData(): string
     {
@@ -291,11 +229,6 @@ class Request
         return '';
     }
 
-    /**
-     * @param array $data
-     *
-     * @return array
-     */
     protected function filterRequestData(array $data): array
     {
         if (!($this->options['filter_nulls'] ?? false)) {
@@ -313,9 +246,6 @@ class Request
         return $filtered;
     }
 
-    /**
-     * @return array
-     */
     protected function getHeadersForRequest(): array
     {
         $headers = [];
@@ -328,11 +258,6 @@ class Request
     }
 
 
-    /**
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Request
-     */
     protected function setHeaders(array &$options): self
     {
         $this->headers = $options['headers'] ?? [];
@@ -342,11 +267,6 @@ class Request
         return $this;
     }
 
-    /**
-     * @param string $uri
-     *
-     * @return \McMatters\Ticl\Http\Request
-     */
     protected function setUri(string $uri): self
     {
         $this->uri = $uri;
@@ -354,11 +274,6 @@ class Request
         return $this;
     }
 
-    /**
-     * @param string $method
-     *
-     * @return \McMatters\Ticl\Http\Request
-     */
     protected function setMethod(string $method): self
     {
         $this->method = $method;
@@ -366,11 +281,6 @@ class Request
         return $this;
     }
 
-    /**
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Request
-     */
     protected function setOptions(array $options): self
     {
         $this->options = $options;

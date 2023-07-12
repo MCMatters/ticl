@@ -19,16 +19,9 @@ use function parse_url;
 use const false;
 use const PHP_QUERY_RFC1738;
 
-/**
- * Trait RequestQueryHandlingTrait
- *
- * @package McMatters\Ticl\Http\Traits
- */
 trait RequestQueryHandlingTrait
 {
     /**
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     protected function handleQueryRequest(): string
@@ -63,7 +56,7 @@ trait RequestQueryHandlingTrait
 
                         return $item;
                     },
-                    $this->options['query']
+                    $this->options['query'],
                 );
             }
 
@@ -71,7 +64,7 @@ trait RequestQueryHandlingTrait
                 $query,
                 $this->options['query_params']['numeric_prefix'] ?? '',
                 $this->options['query_params']['arg_separator'] ?? ini_get('arg_separator.output'),
-                $this->options['query_params']['enc_type'] ?? PHP_QUERY_RFC1738
+                $this->options['query_params']['enc_type'] ?? PHP_QUERY_RFC1738,
             );
 
             return "{$this->uri}?{$query}";
@@ -82,7 +75,7 @@ trait RequestQueryHandlingTrait
         }
 
         throw new InvalidArgumentException(
-            '"query" must be as an array or string'
+            '"query" must be as an array or string',
         );
     }
 }

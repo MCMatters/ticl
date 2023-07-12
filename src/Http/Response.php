@@ -4,124 +4,86 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Http;
 
-use McMatters\Ticl\Helpers\JsonHelper;
+use CurlHandle;
 use McMatters\Ticl\Traits\HeadersTrait;
 use McMatters\Ticl\Traits\ResponsableTrait;
 
-/**
- * Class Response
- *
- * @package McMatters\Ticl\Http
- */
+use function curl_getinfo;
+use function json_decode;
+
+use const JSON_THROW_ON_ERROR;
+use const true;
+
 class Response
 {
     use HeadersTrait;
     use ResponsableTrait;
 
-    /**
-     * @var int
-     */
-    protected $statusCode;
+    protected int $statusCode;
 
-    /**
-     * @var string
-     */
-    protected $body;
+    protected string $body;
 
-    /**
-     * @var array
-     */
-    protected $headers = [];
+    protected array $info = [];
 
-    /**
-     * @var int
-     */
-    protected $headerSize;
+    protected array $headers = [];
 
-    /**
-     * Response constructor.
-     *
-     * @param resource $curl
-     * @param string $response
-     */
-    public function __construct($curl, string $response)
+    protected int $headerSize;
+
+    public function __construct(CurlHandle $curl, string $response)
     {
         $this->setStatusCodeFromCurlInfo($curl)
+            ->setInfo($curl)
             ->setHeaderSize($curl)
             ->setHeaders($response)
             ->setBody($response);
     }
 
-    /**
-     * @return string
-     */
     public function getBody(): string
     {
         return $this->body;
     }
 
-    /**
-     * @return int
-     */
     public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    /**
-     * @return array
-     */
     public function getHeaders(): array
     {
         return $this->headers;
     }
 
     /**
-     * @param bool $associative
-     * @param int $depth
-     * @param int $options
+     * @return array|object
      *
-     * @return mixed
-     *
-     * @throws \McMatters\Ticl\Exceptions\JsonDecodingException
+     * @throws \JsonException
      */
-    public function json(
-        bool $associative = true,
-        int $depth = 512,
-        int $options = 0
-    ) {
-        return JsonHelper::decode($this->body, $associative, $depth, $options);
+    public function json(bool $associative = true, int $depth = 512)
+    {
+        return json_decode($this->body, $associative, $depth, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * @param resource $curl
-     *
-     * @return self
-     */
-    protected function setStatusCodeFromCurlInfo($curl): self
+    protected function setStatusCodeFromCurlInfo(CurlHandle $curl): self
     {
         $this->statusCode = $this->parseStatusCodeFromCurlInfo($curl);
 
         return $this;
     }
 
-    /**
-     * @param resource $curl
-     *
-     * @return self
-     */
-    protected function setHeaderSize($curl): self
+    protected function setInfo(CurlHandle $curl): self
+    {
+        $this->info = curl_getinfo($curl);
+
+        return $this;
+    }
+
+    protected function setHeaderSize(CurlHandle $curl): self
     {
         $this->headerSize = $this->parseHeaderSize($curl);
 
         return $this;
     }
 
-    /**
-     * @param string $response
-     *
-     * @return self
-     */
     protected function setHeaders(string $response): self
     {
         $headers = $this->parseHeaders($response, $this->headerSize);
@@ -132,23 +94,6 @@ class Response
         return $this;
     }
 
-    /**
-     * @param int|null $code
-     *
-     * @return self
-     */
-    protected function setStatusCode(int $code): self
-    {
-        $this->statusCode = $code;
-
-        return $this;
-    }
-
-    /**
-     * @param string $response
-     *
-     * @return self
-     */
     protected function setBody(string $response): self
     {
         $this->body = $this->parseBody($response, $this->headerSize);

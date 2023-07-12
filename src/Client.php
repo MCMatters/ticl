@@ -17,44 +17,20 @@ use const false;
 use const null;
 use const PHP_URL_HOST;
 
-/**
- * Class Client
- *
- * @package McMatters\Ticl
- */
 class Client
 {
-    /**
-     * @var array
-     */
-    protected $config;
+    protected array $config;
 
-    /**
-     * @var \McMatters\Ticl\Http\Request|null
-     */
-    protected $request;
+    protected ?Request $request;
 
-    /**
-     * @var array
-     */
-    protected $with = [];
+    protected array $with = [];
 
-    /**
-     * Client constructor.
-     *
-     * @param array $config
-     */
     public function __construct(array $config = [])
     {
         $this->config = $config;
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -64,11 +40,6 @@ class Client
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -78,11 +49,6 @@ class Client
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -92,11 +58,6 @@ class Client
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -106,11 +67,6 @@ class Client
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -120,11 +76,6 @@ class Client
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -134,11 +85,6 @@ class Client
     }
 
     /**
-     * @param string $uri
-     * @param array $options
-     *
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     public function getFullUrl(string $uri, array $options = []): string
@@ -164,12 +110,6 @@ class Client
         return $uri;
     }
 
-    /**
-     * @param array $query
-     * @param bool $replace
-     *
-     * @return self
-     */
     public function withQuery(array $query, bool $replace = false): self
     {
         $this->with['query'] = $replace
@@ -179,12 +119,6 @@ class Client
         return $this;
     }
 
-    /**
-     * @param array $data
-     * @param bool $replace
-     *
-     * @return self
-     */
     public function withJson(array $data, bool $replace = false): self
     {
         $this->with['json'] = $replace
@@ -194,12 +128,6 @@ class Client
         return $this;
     }
 
-    /**
-     * @param array $data
-     * @param bool $replace
-     *
-     * @return self
-     */
     public function withHeaders(array $data, bool $replace = false): self
     {
         $this->with['headers'] = $replace
@@ -210,12 +138,6 @@ class Client
     }
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     *
-     * @return \McMatters\Ticl\Http\Response
-     *
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
      */
@@ -244,11 +166,6 @@ class Client
         return $request->send();
     }
 
-    /**
-     * @param array $options
-     *
-     * @return array
-     */
     protected function prepareOptions(array $options = []): array
     {
         return array_replace_recursive($this->config, $this->with, $options);

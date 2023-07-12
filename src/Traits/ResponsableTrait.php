@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Traits;
 
+use CurlHandle;
+
 use function array_filter;
 use function array_pop;
 use function count;
@@ -16,29 +18,13 @@ use function trim;
 use const CURLINFO_HEADER_SIZE;
 use const CURLINFO_HTTP_CODE;
 
-/**
- * Class ResponsableTrait
- *
- * @package
- */
 trait ResponsableTrait
 {
-    /**
-     * @param resource $curl
-     *
-     * @return int
-     */
-    protected function parseHeaderSize($curl): int
+    protected function parseHeaderSize(CurlHandle $curl): int
     {
         return (int) (curl_getinfo($curl, CURLINFO_HEADER_SIZE) ?: 0);
     }
 
-    /**
-     * @param string $response
-     * @param int $headerSize
-     *
-     * @return array
-     */
     protected function parseHeaders(string $response, int $headerSize): array
     {
         if ('' === $response) {
@@ -70,7 +56,7 @@ trait ResponsableTrait
                 continue;
             }
 
-            list($name, $value) = $values;
+            [$name, $value] = $values;
 
             $headers['headers'][$name] = $value;
         }
@@ -78,22 +64,11 @@ trait ResponsableTrait
         return $headers;
     }
 
-    /**
-     * @param resource $curl
-     *
-     * @return int
-     */
-    protected function parseStatusCodeFromCurlInfo($curl): int
+    protected function parseStatusCodeFromCurlInfo(CurlHandle $curl): int
     {
         return (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
     }
 
-    /**
-     * @param string $response
-     * @param int $headerSize
-     *
-     * @return string
-     */
     protected function parseBody(string $response, int $headerSize): string
     {
         if ('' === $response) {

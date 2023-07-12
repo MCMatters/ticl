@@ -4,96 +4,65 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Exceptions;
 
+use CurlHandle;
 use McMatters\Ticl\Enums\HttpStatusCode;
-use McMatters\Ticl\Helpers\JsonHelper;
 use McMatters\Ticl\Traits\HeadersTrait;
 use McMatters\Ticl\Traits\ResponsableTrait;
 use RuntimeException;
-use Throwable;
 
 use function curl_errno;
 use function get_defined_constants;
-use function strpos;
-use function strtolower;
+use function json_decode;
+use function mb_strtolower;
+use function mb_substr;
 use function str_replace;
-use function substr;
+use function str_starts_with;
 use function ucfirst;
 
+use const JSON_THROW_ON_ERROR;
 use const true;
 
-/**
- * Class RequestException
- *
- * @package McMatters\Ticl\Exceptions
- */
 class RequestException extends RuntimeException
 {
     use HeadersTrait;
     use ResponsableTrait;
 
-    /**
-     * @var array
-     */
-    protected $headers = [];
+    protected array $headers = [];
 
-    /**
-     * @var int
-     */
-    protected $headerSize;
+    protected int $headerSize;
 
-    /**
-     * RequestException constructor.
-     *
-     * @param string $response
-     * @param resource $curl
-     */
-    public function __construct(string $response, $curl)
+    public function __construct(CurlHandle $curl, string $response)
     {
-        $this->setCode($response, $curl)
+        $this->setCode($curl, $response)
             ->setHeaderSize($curl)
             ->setHeaders($response)
-            ->setMessage($response, $curl);
+            ->setMessage($curl, $response);
 
         parent::__construct($this->message, $this->code);
     }
 
     /**
-     * @return array
+     * @return array|object
+     *
+     * @throws \JsonException
      */
-    public function asJson(): array
+    public function asJson(bool $associative = true, int $depth = 512)
     {
-        try {
-            return JsonHelper::decode($this->message);
-        } catch (Throwable $e) {
-            return [];
-        }
+        return json_decode($this->message, $associative, $depth, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * @return array
-     */
     public function getHeaders(): array
     {
         return $this->headers;
     }
 
-    /**
-     * @param resource $curl
-     *
-     * @return self
-     */
-    protected function setHeaderSize($curl): self
+    protected function setHeaderSize(CurlHandle $curl): self
     {
         $this->headerSize = $this->parseHeaderSize($curl);
 
         return $this;
     }
 
-    /**
-     * @param string $response
-     *
-     * @return self
-     */
     protected function setHeaders(string $response): self
     {
         $headers = $this->parseHeaders($response, $this->headerSize);
@@ -104,13 +73,7 @@ class RequestException extends RuntimeException
         return $this;
     }
 
-    /**
-     * @param string $response
-     * @param resource $curl
-     *
-     * @return self
-     */
-    protected function setMessage(string $response, $curl): self
+    protected function setMessage(CurlHandle $curl, string $response): self
     {
         $this->message = '' === $response
             ? $this->getCurlErrorMessage(curl_errno($curl))
@@ -119,13 +82,7 @@ class RequestException extends RuntimeException
         return $this;
     }
 
-    /**
-     * @param string $response
-     * @param resource $curl
-     *
-     * @return self
-     */
-    protected function setCode(string $response, $curl): self
+    protected function setCode(CurlHandle $curl, string $response): self
     {
         $this->code = '' === $response
             ? HttpStatusCode::INTERNAL_SERVER_ERROR
@@ -134,11 +91,6 @@ class RequestException extends RuntimeException
         return $this;
     }
 
-    /**
-     * @param int $code
-     *
-     * @return string
-     */
     protected function getCurlErrorMessage(int $code): string
     {
         $constants = get_defined_constants(true);
@@ -146,9 +98,9 @@ class RequestException extends RuntimeException
         $curlConstants = [];
 
         foreach ($constants['curl'] ?? [] as $key => $value) {
-            if (strpos($key, 'CURLE_') === 0) {
+            if (str_starts_with($key, 'CURLE_')) {
                 $curlConstants[(int) $value] = ucfirst(
-                    strtolower(str_replace('_', ' ', substr($key, 6)))
+                    mb_strtolower(str_replace('_', ' ', mb_substr($key, 6))),
                 );
             }
         }
