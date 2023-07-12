@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Traits;
 
+use stdClass;
+
 use function is_callable;
 use function mb_strtolower;
 
@@ -14,15 +16,9 @@ trait HeadersTrait
 {
     public function hasHeader(string $name): bool
     {
-        $name = mb_strtolower($name);
+        $default = new stdClass();
 
-        foreach ($this->headers as $key => $value) {
-            if (mb_strtolower($key) === $name) {
-                return true;
-            }
-        }
-
-        return false;
+        return $default !== $this->getHeader($name, $default);
     }
 
     public function hasHeaders(array $names): bool
@@ -43,10 +39,10 @@ trait HeadersTrait
      */
     public function getHeader(string $name, $default = null)
     {
-        $name = strtolower($name);
+        $name = mb_strtolower($name);
 
         foreach ($this->headers as $key => $value) {
-            if (strtolower($key) === $name) {
+            if (mb_strtolower($key) === $name) {
                 return $value;
             }
         }

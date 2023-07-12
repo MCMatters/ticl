@@ -8,7 +8,9 @@ use CurlHandle;
 use McMatters\Ticl\Traits\HeadersTrait;
 use McMatters\Ticl\Traits\ResponsableTrait;
 
+use function array_key_exists;
 use function curl_getinfo;
+use function is_callable;
 use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
@@ -41,6 +43,20 @@ class Response
     public function getBody(): string
     {
         return $this->body;
+    }
+
+    public function getInfo(): array
+    {
+        return $this->info;
+    }
+
+    public function getInfoByKey(string $key, $default = null)
+    {
+        if (!array_key_exists($key, $this->info)) {
+            return is_callable($default) ? $default() : $default;
+        }
+
+        return $this->info[$key];
     }
 
     public function getStatusCode(): int
