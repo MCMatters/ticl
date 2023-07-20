@@ -152,7 +152,7 @@ class Client
         if (!($options['keep_alive'] ?? false)) {
             $request = new Request($method, $uri, $options);
         } else {
-            if (null === $this->request) {
+            if (!isset($this->request)) {
                 $this->request = $request = new Request($method, $uri, $options);
             } else {
                 $request = $this->request->setDefaults($method, $uri, $options);
