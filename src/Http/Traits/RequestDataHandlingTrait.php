@@ -33,10 +33,13 @@ trait RequestDataHandlingTrait
         }
 
         if (is_array($this->options['json']) || is_object($this->options['json'])) {
-            return json_encode(
-                $this->filterRequestData($this->options['json']),
-                JSON_THROW_ON_ERROR,
-            );
+            $data = $this->filterRequestData($this->options['json']);
+
+            if (empty($data) && ($this->options['empty_json_as_empty_string'] ?? false)) {
+                return '';
+            }
+
+            return json_encode($data, JSON_THROW_ON_ERROR);
         }
 
         if (!is_string($this->options['json'])) {

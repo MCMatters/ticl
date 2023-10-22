@@ -148,6 +148,7 @@ class Request
 
     /**
      * @throws \InvalidArgumentException
+     * @throws \JsonException
      */
     protected function preparePostRequest(): void
     {
@@ -157,6 +158,7 @@ class Request
 
     /**
      * @throws \InvalidArgumentException
+     * @throws \JsonException
      */
     protected function preparePutRequest(): void
     {
@@ -166,6 +168,7 @@ class Request
 
     /**
      * @throws \InvalidArgumentException
+     * @throws \JsonException
      */
     protected function preparePatchRequest(): void
     {
@@ -175,6 +178,7 @@ class Request
 
     /**
      * @throws \InvalidArgumentException
+     * @throws \JsonException
      */
     protected function prepareDeleteRequest(): void
     {
