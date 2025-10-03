@@ -137,6 +137,15 @@ class Client
         return $this;
     }
 
+    public function setDefaultHeaders(array $data, bool $replace = false): self
+    {
+        $this->config['headers'] = $replace
+            ? $data
+            : array_replace_recursive($this->config['headers'] ?? [], $data);
+
+        return $this;
+    }
+
     /**
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
@@ -144,7 +153,7 @@ class Client
     protected function call(
         string $method,
         string $uri,
-        array $options = []
+        array $options = [],
     ): Response {
         $uri = $this->getFullUrl($uri, $options);
         $options = $this->prepareOptions($options);

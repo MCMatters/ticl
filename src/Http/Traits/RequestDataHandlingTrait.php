@@ -142,8 +142,8 @@ trait RequestDataHandlingTrait
                     break;
 
                 case 'object':
-                    if (is_callable([$item['content'], '__toString'])) {
-                        $field .= ((string) $item['content']);
+                    if (is_callable([$item['contents'], '__toString'])) {
+                        $field .= ((string) $item['contents']);
                     }
 
                     break;
