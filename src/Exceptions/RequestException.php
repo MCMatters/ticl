@@ -27,10 +27,6 @@ class RequestException extends RuntimeException
     use HeadersTrait;
     use ResponsableTrait;
 
-    protected array $headers = [];
-
-    protected int $headerSize;
-
     public function __construct(CurlHandle $curl, string $response)
     {
         $this->setCode($curl, $response)
@@ -49,18 +45,6 @@ class RequestException extends RuntimeException
     public function asJson(bool $associative = true, int $depth = 512)
     {
         return json_decode($this->message, $associative, $depth, JSON_THROW_ON_ERROR);
-    }
-
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
-    protected function setHeaderSize(CurlHandle $curl): self
-    {
-        $this->headerSize = $this->parseHeaderSize($curl);
-
-        return $this;
     }
 
     protected function setHeaders(string $response): self

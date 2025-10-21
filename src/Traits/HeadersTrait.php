@@ -32,12 +32,7 @@ trait HeadersTrait
         return true;
     }
 
-    /**
-     * @param mixed $default
-     *
-     * @return mixed
-     */
-    public function getHeader(string $name, $default = null)
+    public function getHeader(string $name, mixed $default = null): mixed
     {
         $name = mb_strtolower($name);
 
@@ -50,10 +45,7 @@ trait HeadersTrait
         return is_callable($default) ? $default() : $default;
     }
 
-    /**
-     * @param mixed $value
-     */
-    protected function setHeader(string $key, $value): self
+    protected function setHeader(string $key, mixed $value): self
     {
         $this->headers[$key] = $value;
 

@@ -8,9 +8,6 @@ use CurlHandle;
 use McMatters\Ticl\Traits\HeadersTrait;
 use McMatters\Ticl\Traits\ResponsableTrait;
 
-use function array_key_exists;
-use function curl_getinfo;
-use function is_callable;
 use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
@@ -21,15 +18,9 @@ class Response
     use HeadersTrait;
     use ResponsableTrait;
 
-    protected int $statusCode;
+    protected int $code;
 
     protected string $body;
-
-    protected array $info = [];
-
-    protected array $headers = [];
-
-    protected int $headerSize;
 
     public function __construct(CurlHandle $curl, string $response)
     {
@@ -45,28 +36,10 @@ class Response
         return $this->body;
     }
 
-    public function getInfo(): array
-    {
-        return $this->info;
-    }
-
-    public function getInfoByKey(string $key, $default = null)
-    {
-        if (!array_key_exists($key, $this->info)) {
-            return is_callable($default) ? $default() : $default;
-        }
-
-        return $this->info[$key];
-    }
-
+    # [\Deprecated]
     public function getStatusCode(): int
     {
-        return $this->statusCode;
-    }
-
-    public function getHeaders(): array
-    {
-        return $this->headers;
+        return $this->getCode();
     }
 
     /**
@@ -81,21 +54,7 @@ class Response
 
     protected function setStatusCodeFromCurlInfo(CurlHandle $curl): self
     {
-        $this->statusCode = $this->parseStatusCodeFromCurlInfo($curl);
-
-        return $this;
-    }
-
-    protected function setInfo(CurlHandle $curl): self
-    {
-        $this->info = curl_getinfo($curl);
-
-        return $this;
-    }
-
-    protected function setHeaderSize(CurlHandle $curl): self
-    {
-        $this->headerSize = $this->parseHeaderSize($curl);
+        $this->code = $this->parseStatusCodeFromCurlInfo($curl);
 
         return $this;
     }
@@ -105,7 +64,7 @@ class Response
         $headers = $this->parseHeaders($response, $this->headerSize);
 
         $this->headers = $headers['headers'] ?? [];
-        $this->statusCode = $headers['code'] ?? $this->statusCode;
+        $this->code = $headers['code'] ?? $this->code;
 
         return $this;
     }

@@ -19,6 +19,7 @@ use function curl_init;
 use function curl_reset;
 use function curl_setopt;
 use function is_bool;
+use function is_callable;
 use function method_exists;
 use function ucfirst;
 
@@ -105,17 +106,21 @@ class Request
 
         $this->setUpRedirects();
 
-        $response = curl_exec($this->curl);
+        try {
+            $response = curl_exec($this->curl);
 
-        if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
-            throw new RequestException($this->curl, is_bool($response) ? '' : $response);
+            if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
+                throw new RequestException($this->curl, is_bool($response) ? '' : $response);
+            }
+
+            if (false === $response) {
+                throw new RequestException($this->curl, '');
+            }
+
+            return new Response($this->curl, is_bool($response) ? '' : $response);
+        } finally {
+            $this->callAfterCallback($this->curl, $response);
         }
-
-        if (false === $response) {
-            throw new RequestException($this->curl, '');
-        }
-
-        return new Response($this->curl, is_bool($response) ? '' : $response);
     }
 
     protected function setOptionsDependOnMethod(): void
@@ -239,15 +244,7 @@ class Request
             return $data;
         }
 
-        $filtered = [];
-
-        foreach ($data as $key => $item) {
-            if (null !== $item) {
-                $filtered[$key] = $item;
-            }
-        }
-
-        return $filtered;
+        return array_filter($data, static fn ($item) => null !== $item);
     }
 
     protected function getHeadersForRequest(): array
@@ -260,7 +257,6 @@ class Request
 
         return $headers;
     }
-
 
     protected function setHeaders(array &$options): self
     {
@@ -290,5 +286,20 @@ class Request
         $this->options = $options;
 
         return $this;
+    }
+
+    protected function callAfterCallback(CurlHandle $curl, bool|string $response): void
+    {
+        if (!isset($this->options['after_callback'])) {
+            return;
+        }
+
+        foreach ((array) $this->options['after_callback'] as $afterCallback) {
+            if (!is_callable($afterCallback)) {
+                continue;
+            }
+
+            $afterCallback($curl, $response);
+        }
     }
 }

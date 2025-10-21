@@ -25,6 +25,8 @@ class Client
 
     protected array $with = [];
 
+    protected static array $globalConfig = [];
+
     public function __construct(array $config = [])
     {
         $this->config = $config;
@@ -93,14 +95,14 @@ class Client
             return $uri;
         }
 
-        if (!empty($this->config['base_uri'])) {
+        if (!empty($options['base_uri'])) {
             $uri = ltrim($uri, '/');
 
             if ('' === $uri) {
-                return rtrim($this->config['base_uri'], '/');
+                return rtrim($options['base_uri'], '/');
             }
 
-            return rtrim($this->config['base_uri'], '/')."/{$uri}";
+            return rtrim($options['base_uri'], '/')."/{$uri}";
         }
 
         if (null === parse_url($uri, PHP_URL_HOST)) {
@@ -146,6 +148,16 @@ class Client
         return $this;
     }
 
+    public static function setGlobalConfig(string $key, mixed $value): void
+    {
+        self::$globalConfig[$key] = $value;
+    }
+
+    public static function clearGlobalConfig(): void
+    {
+        self::$globalConfig = [];
+    }
+
     /**
      * @throws \InvalidArgumentException
      * @throws \McMatters\Ticl\Exceptions\RequestException
@@ -155,8 +167,8 @@ class Client
         string $uri,
         array $options = [],
     ): Response {
-        $uri = $this->getFullUrl($uri, $options);
         $options = $this->prepareOptions($options);
+        $uri = $this->getFullUrl($uri, $options);
 
         if (!($options['keep_alive'] ?? false)) {
             $request = new Request($method, $uri, $options);
@@ -177,6 +189,11 @@ class Client
 
     protected function prepareOptions(array $options = []): array
     {
-        return array_replace_recursive($this->config, $this->with, $options);
+        return array_replace_recursive(
+            self::$globalConfig,
+            $this->config,
+            $this->with,
+            $options,
+        );
     }
 }
