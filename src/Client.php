@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace McMatters\Ticl;
 
 use InvalidArgumentException;
+use McMatters\Ticl\Exceptions\RequestException;
 use McMatters\Ticl\Http\Request;
 use McMatters\Ticl\Http\Response;
 
 use function array_replace_recursive;
 use function ltrim;
+use function max;
 use function parse_url;
 use function rtrim;
 
 use const false;
 use const null;
 use const PHP_URL_HOST;
+use const true;
 
 class Client
 {
@@ -184,7 +187,28 @@ class Client
 
         $this->with = [];
 
-        return $request->send();
+        return $this->sendRequest($request, $options);
+    }
+
+    protected function sendRequest(
+        Request $request,
+        array $options = [],
+    ): Response {
+        $attempts = 0;
+        $retryCount = max($options['retry_count'] ?? 1, 1);
+        $retrySleep = $options['retry_sleep'] ?? 0;
+
+        do {
+            try {
+                return $request->send();
+            } catch (RequestException $e) {
+                if (++$attempts >= $retryCount) {
+                    throw $e;
+                }
+
+                usleep($retrySleep * 1000);
+            }
+        } while (true);
     }
 
     protected function prepareOptions(array $options = []): array

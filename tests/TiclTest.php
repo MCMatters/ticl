@@ -8,6 +8,7 @@ use CurlHandle;
 use McMatters\Ticl\Client;
 use McMatters\Ticl\Enums\HttpStatusCode;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 use function curl_getinfo;
 
@@ -59,6 +60,28 @@ class TiclTest extends TestCase
         });
 
         (new Client())->get('https://www.google.com');
+    }
+
+    public function testRetry(): void
+    {
+        $attempts = 0;
+        $retryCount = 5;
+
+        $client = new Client([
+            'base_uri' => 'https://google.com/404',
+            'retry_count' => $retryCount,
+            'after_callback' => function () use (&$attempts) {
+                $attempts++;
+            },
+        ]);
+
+        try {
+            $client->get('/');
+        } catch (Throwable) {
+            //
+        }
+
+        $this->assertSame($retryCount, $attempts);
     }
 
     protected function tearDown(): void

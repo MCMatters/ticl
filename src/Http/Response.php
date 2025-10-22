@@ -36,6 +36,11 @@ class Response
         return $this->body;
     }
 
+    public function getCode(): int
+    {
+        return $this->code;
+    }
+
     # [\Deprecated]
     public function getStatusCode(): int
     {

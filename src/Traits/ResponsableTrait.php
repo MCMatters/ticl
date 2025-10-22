@@ -28,11 +28,6 @@ trait ResponsableTrait
 
     protected int $headerSize;
 
-    public function getCode(): int
-    {
-        return $this->code;
-    }
-
     public function getInfo(): array
     {
         return $this->info;
