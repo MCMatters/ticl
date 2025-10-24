@@ -7,8 +7,8 @@ namespace McMatters\Ticl\Tests;
 use CurlHandle;
 use McMatters\Ticl\Client;
 use McMatters\Ticl\Enums\HttpStatusCode;
+use McMatters\Ticl\Exceptions\RequestException;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 
 use function curl_getinfo;
 
@@ -75,11 +75,9 @@ class TiclTest extends TestCase
             },
         ]);
 
-        try {
-            $client->get('/');
-        } catch (Throwable) {
-            //
-        }
+        $this->expectException(RequestException::class);
+
+        $client->get('/');
 
         $this->assertSame($retryCount, $attempts);
     }
