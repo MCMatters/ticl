@@ -21,7 +21,7 @@ try {
     $response = $client->get('http://example.com/api/user?token=test');
     $user = $response->json();
 } catch (\McMatters\Ticl\Exceptions\RequestException $e) {
-    $error = $e->asJson();
+    $error = $e->json();
 } catch (\Throwable $e) {
     $error = $e->getMessage();
 }
