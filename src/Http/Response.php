@@ -8,11 +8,6 @@ use CurlHandle;
 use McMatters\Ticl\Traits\HeadersTrait;
 use McMatters\Ticl\Traits\ResponsableTrait;
 
-use function json_decode;
-
-use const JSON_THROW_ON_ERROR;
-use const true;
-
 class Response
 {
     use HeadersTrait;
@@ -24,9 +19,9 @@ class Response
 
     public function __construct(CurlHandle $curl, string $response)
     {
-        $this->setStatusCodeFromCurlInfo($curl)
-            ->setInfo($curl)
-            ->setHeaderSize($curl)
+        $this->setInfo($curl)
+            ->setCode()
+            ->setHeaderSize()
             ->setHeaders($response)
             ->setBody($response);
     }
@@ -41,35 +36,9 @@ class Response
         return $this->code;
     }
 
-    # [\Deprecated]
-    public function getStatusCode(): int
+    protected function setCode(): self
     {
-        return $this->getCode();
-    }
-
-    /**
-     * @return array|object
-     *
-     * @throws \JsonException
-     */
-    public function json(bool $associative = true, int $depth = 512)
-    {
-        return json_decode($this->body, $associative, $depth, JSON_THROW_ON_ERROR);
-    }
-
-    protected function setStatusCodeFromCurlInfo(CurlHandle $curl): self
-    {
-        $this->code = $this->parseStatusCodeFromCurlInfo($curl);
-
-        return $this;
-    }
-
-    protected function setHeaders(string $response): self
-    {
-        $headers = $this->parseHeaders($response, $this->headerSize);
-
-        $this->headers = $headers['headers'] ?? [];
-        $this->code = $headers['code'] ?? $this->code;
+        $this->code = $this->getInfoByKey('http_code');
 
         return $this;
     }

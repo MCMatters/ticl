@@ -13,20 +13,32 @@ use function count;
 use function curl_getinfo;
 use function explode;
 use function is_callable;
+use function json_decode;
 use function preg_match;
 use function substr;
 use function trim;
 
-use const CURLINFO_HEADER_SIZE;
-use const CURLINFO_HTTP_CODE;
+use const JSON_THROW_ON_ERROR;
+use const true;
 
 trait ResponsableTrait
 {
     protected array $info = [];
 
-    protected array $headers = [];
-
     protected int $headerSize;
+
+    public function json(
+        bool $associative = true,
+        int $depth = 512,
+        int $flags = JSON_THROW_ON_ERROR
+    ): array|object {
+        return json_decode(
+            $this->body ?? $this->message ?? '',
+            $associative,
+            $depth,
+            $flags,
+        );
+    }
 
     public function getInfo(): array
     {
@@ -42,9 +54,14 @@ trait ResponsableTrait
         return $this->info[$key];
     }
 
-    public function getHeaders(): array
+    protected function setHeaders(string $response): self
     {
-        return $this->headers;
+        $headers = $this->parseHeaders($response, $this->headerSize);
+
+        $this->headers = $headers['headers'] ?? [];
+        $this->code = $headers['code'] ?? $this->code;
+
+        return $this;
     }
 
     protected function setInfo(CurlHandle $curl): self
@@ -54,16 +71,11 @@ trait ResponsableTrait
         return $this;
     }
 
-    protected function setHeaderSize(CurlHandle $curl): self
+    protected function setHeaderSize(): self
     {
-        $this->headerSize = $this->parseHeaderSize($curl);
+        $this->headerSize = $this->getInfoByKey('header_size');
 
         return $this;
-    }
-
-    protected function parseHeaderSize(CurlHandle $curl): int
-    {
-        return (int) (curl_getinfo($curl, CURLINFO_HEADER_SIZE) ?: 0);
     }
 
     protected function parseHeaders(string $response, int $headerSize): array
@@ -72,7 +84,9 @@ trait ResponsableTrait
             return [];
         }
 
-        $responseHeaders = array_filter(explode("\r\n\r\n", substr($response, 0, $headerSize)));
+        $responseHeaders = array_filter(
+            explode("\r\n\r\n", substr($response, 0, $headerSize)),
+        );
 
         if (count($responseHeaders) === 0) {
             return [];
@@ -103,11 +117,6 @@ trait ResponsableTrait
         }
 
         return $headers;
-    }
-
-    protected function parseStatusCodeFromCurlInfo(CurlHandle $curl): int
-    {
-        return (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
     }
 
     protected function parseBody(string $response, int $headerSize): string

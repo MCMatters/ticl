@@ -11,6 +11,7 @@ use McMatters\Ticl\Http\Traits\RequestDataHandlingTrait;
 use McMatters\Ticl\Http\Traits\RequestQueryHandlingTrait;
 use McMatters\Ticl\Traits\HeadersTrait;
 
+use function array_filter;
 use function array_key_exists;
 use function curl_close;
 use function curl_exec;
@@ -50,7 +51,9 @@ class Request
 
     protected string $method;
 
-    protected array $headers = [];
+    protected ?string $body = null;
+
+    protected ?string $bodyType = null;
 
     protected array $options = [];
 
@@ -110,16 +113,25 @@ class Request
             $response = curl_exec($this->curl);
 
             if (curl_getinfo($this->curl, CURLINFO_HTTP_CODE) >= HttpStatusCode::BAD_REQUEST) {
-                throw new RequestException($this->curl, is_bool($response) ? '' : $response);
+                $response = new RequestException($this->curl, is_bool($response) ? '' : $response);
+
+                throw $response;
             }
 
             if (false === $response) {
-                throw new RequestException($this->curl, '');
+                $response = new RequestException($this->curl, '');
+
+                throw $response;
             }
 
-            return new Response($this->curl, is_bool($response) ? '' : $response);
+            $response = new Response($this->curl, is_bool($response) ? '' : $response);
+
+            return $response;
         } finally {
-            $this->callAfterCallback($this->curl, $response);
+            $this->callAfterCallback($url, $response);
+
+            $this->body = null;
+            $this->bodyType = null;
         }
     }
 
@@ -158,7 +170,7 @@ class Request
     protected function preparePostRequest(): void
     {
         $this->prepareGetRequest();
-        curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestData());
+        curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getBody());
     }
 
     /**
@@ -217,25 +229,30 @@ class Request
      * @throws \InvalidArgumentException
      * @throws \JsonException
      */
-    protected function getRequestData(): string
+    protected function getBody(): string
     {
+        if (null !== $this->body) {
+            return $this->body;
+        }
+
         if (array_key_exists('json', $this->options)) {
-            return $this->handleJsonRequestData();
+            $this->body = $this->handleJsonRequestData();
+            $this->bodyType = 'json';
+        } elseif (array_key_exists('body', $this->options)) {
+            $this->body = $this->handleBodyRequestData();
+            $this->bodyType = 'body';
+        } elseif (array_key_exists('form', $this->options)) {
+            $this->body = $this->handleFormRequestData();
+            $this->bodyType = 'form';
+        } elseif (array_key_exists('binary', $this->options)) {
+            $this->body = $this->handleBinaryRequestData();
+            $this->bodyType = 'binary';
+        } else {
+            $this->body = '';
+            $this->bodyType = 'none';
         }
 
-        if (array_key_exists('body', $this->options)) {
-            return $this->handleBodyRequestData();
-        }
-
-        if (array_key_exists('form', $this->options)) {
-            return $this->handleFormRequestData();
-        }
-
-        if (array_key_exists('binary', $this->options)) {
-            return $this->handleBinaryRequestData();
-        }
-
-        return '';
+        return $this->body;
     }
 
     protected function filterRequestData(array $data): array
@@ -251,7 +268,7 @@ class Request
     {
         $headers = [];
 
-        foreach ($this->headers as $key => $value) {
+        foreach ($this->getHeaders() as $key => $value) {
             $headers[] = "{$key}: {$value}";
         }
 
@@ -288,8 +305,10 @@ class Request
         return $this;
     }
 
-    protected function callAfterCallback(CurlHandle $curl, bool|string $response): void
-    {
+    protected function callAfterCallback(
+        string $url,
+        RequestException|Response $response,
+    ): void {
         if (!isset($this->options['after_callback'])) {
             return;
         }
@@ -299,7 +318,14 @@ class Request
                 continue;
             }
 
-            $afterCallback($curl, $response);
+            $afterCallback(
+                $this->method,
+                $url,
+                $this->headers,
+                $this->getBody(),
+                $this->bodyType,
+                $response,
+            );
         }
     }
 }

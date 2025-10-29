@@ -14,6 +14,8 @@ use const true;
 
 trait HeadersTrait
 {
+    protected array $headers = [];
+
     public function hasHeader(string $name): bool
     {
         $default = new stdClass();
@@ -43,6 +45,11 @@ trait HeadersTrait
         }
 
         return is_callable($default) ? $default() : $default;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
     }
 
     protected function setHeader(string $key, mixed $value): self

@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace McMatters\Ticl\Tests;
 
-use CurlHandle;
 use McMatters\Ticl\Client;
 use McMatters\Ticl\Enums\HttpStatusCode;
 use McMatters\Ticl\Exceptions\RequestException;
+use McMatters\Ticl\Http\Response;
 use PHPUnit\Framework\TestCase;
-
-use function curl_getinfo;
-
-use const CURLINFO_HTTP_CODE;
 
 class TiclTest extends TestCase
 {
@@ -52,12 +48,23 @@ class TiclTest extends TestCase
 
     public function testAfterCallback(): void
     {
-        Client::setGlobalConfig('after_callback', function (CurlHandle $curl, bool|string $response) {
-            $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-            $this->assertSame(HttpStatusCode::OK, $code);
-            $this->assertNotEmpty($response);
-        });
+        Client::setGlobalConfig(
+            'after_callback',
+            function (
+                string $method,
+                string $url,
+                array $headers,
+                string $body,
+                string $bodyType,
+                RequestException|Response $response,
+            ) {
+                $this->assertSame(HttpStatusCode::OK, $response->getCode());
+                $this->assertSame('get', $method);
+                $this->assertSame('https://www.google.com', $url);
+                $this->assertSame('', $body);
+                $this->assertSame('none', $bodyType);
+            }
+        );
 
         (new Client())->get('https://www.google.com');
     }
