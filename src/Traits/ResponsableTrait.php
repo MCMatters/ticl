@@ -27,6 +27,8 @@ trait ResponsableTrait
 
     protected int $headerSize;
 
+    protected string $body;
+
     public function json(
         bool $associative = true,
         int $depth = 512,
@@ -54,14 +56,9 @@ trait ResponsableTrait
         return $this->info[$key];
     }
 
-    protected function setHeaders(string $response): self
+    public function getBody(): string
     {
-        $headers = $this->parseHeaders($response, $this->headerSize);
-
-        $this->headers = $headers['headers'] ?? [];
-        $this->code = $headers['code'] ?? $this->code;
-
-        return $this;
+        return $this->body;
     }
 
     protected function setInfo(CurlHandle $curl): self
@@ -74,6 +71,16 @@ trait ResponsableTrait
     protected function setHeaderSize(): self
     {
         $this->headerSize = $this->getInfoByKey('header_size');
+
+        return $this;
+    }
+
+    protected function setHeaders(string $response): self
+    {
+        $headers = $this->parseHeaders($response, $this->headerSize);
+
+        $this->headers = $headers['headers'] ?? [];
+        $this->code = $headers['code'] ?? $this->code;
 
         return $this;
     }

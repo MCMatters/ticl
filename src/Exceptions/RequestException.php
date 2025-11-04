@@ -31,14 +31,14 @@ class RequestException extends RuntimeException
             ->setCode($response)
             ->setHeaderSize()
             ->setHeaders($response)
-            ->setMessage($curl, $response);
+            ->setBody($curl, $response);
 
-        parent::__construct($this->message, $this->code);
+        parent::__construct($this->body, $this->code);
     }
 
-    protected function setMessage(CurlHandle $curl, string $response): self
+    protected function setBody(CurlHandle $curl, string $response): self
     {
-        $this->message = '' === $response
+        $this->body = '' === $response
             ? $this->getCurlErrorMessage(curl_errno($curl))
             : $this->parseBody($response, $this->headerSize);
 
