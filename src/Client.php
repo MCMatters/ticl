@@ -133,6 +133,15 @@ class Client
         return $this;
     }
 
+    public function withFiles(array $files, bool $replace = false): self
+    {
+        $this->with['files'] = $replace
+            ? $files
+            : array_replace_recursive($this->with['files'] ?? [], $files);
+
+        return $this;
+    }
+
     public function withHeaders(array $data, bool $replace = false): self
     {
         $this->with['headers'] = $replace

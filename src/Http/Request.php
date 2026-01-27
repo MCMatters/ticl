@@ -13,7 +13,6 @@ use McMatters\Ticl\Traits\HeadersTrait;
 
 use function array_filter;
 use function array_key_exists;
-use function curl_close;
 use function curl_exec;
 use function curl_getinfo;
 use function curl_init;
@@ -51,7 +50,7 @@ class Request
 
     protected string $method;
 
-    protected ?string $body = null;
+    protected array|string|null $body = null;
 
     protected ?string $bodyType = null;
 
@@ -70,9 +69,7 @@ class Request
     public function __destruct()
     {
         if ($this->curl) {
-            curl_close($this->curl);
-
-            $this->curl = null;
+            unset($this->curl);
         }
     }
 
@@ -229,7 +226,7 @@ class Request
      * @throws \InvalidArgumentException
      * @throws \JsonException
      */
-    protected function getBody(): string
+    protected function getBody(): array|string
     {
         if (null !== $this->body) {
             return $this->body;
@@ -247,6 +244,9 @@ class Request
         } elseif (array_key_exists('binary', $this->options)) {
             $this->body = $this->handleBinaryRequestData();
             $this->bodyType = 'binary';
+        } elseif (array_key_exists('files', $this->options)) {
+            $this->body = $this->handleFilesRequestData();
+            $this->bodyType = 'files';
         } else {
             $this->body = '';
             $this->bodyType = 'none';

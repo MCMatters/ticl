@@ -10,6 +10,13 @@ use McMatters\Ticl\Exceptions\RequestException;
 use McMatters\Ticl\Http\Response;
 use PHPUnit\Framework\TestCase;
 
+use function curl_file_create;
+use function file_exists;
+use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
+
 class TiclTest extends TestCase
 {
     public function testGet(): void
@@ -67,6 +74,33 @@ class TiclTest extends TestCase
         );
 
         (new Client())->get('https://www.google.com');
+    }
+
+    public function testFileUpload(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'ticl');
+        file_put_contents($path, 'test content');
+
+        $client = new Client();
+
+        try {
+            $response = $client
+                ->withFiles([
+                    'file' => curl_file_create($path, 'text/plain', 'test.txt'),
+                    'foo' => 'bar',
+                ])
+                ->post('https://httpbin.org/post');
+
+            $this->assertSame(HttpStatusCode::OK, $response->getCode());
+            $json = $response->json();
+            $this->assertArrayHasKey('files', $json);
+            $this->assertArrayHasKey('file', $json['files']);
+            $this->assertSame('bar', $json['form']['foo'] ?? null);
+        } finally {
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
     }
 
     public function testRetry(): void

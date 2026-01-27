@@ -93,6 +93,22 @@ trait RequestDataHandlingTrait
     /**
      * @throws \InvalidArgumentException
      */
+    protected function handleFilesRequestData(): array
+    {
+        if (!is_array($this->options['files'])) {
+            throw new InvalidArgumentException('"files" key must be an array');
+        }
+
+        if (!$this->hasHeader('content-type')) {
+            $this->setHeader('content-type', 'multipart/form-data');
+        }
+
+        return $this->filterRequestData($this->options['files']);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
     protected function handleFormRequestData(): string
     {
         $boundary = $this->options['boundary'] ?? sha1(uniqid('', true));
